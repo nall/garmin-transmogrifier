@@ -42,6 +42,9 @@ void usb_init()
     OTGIEN |= _BV(SRPE);
     // End 21.10.2 workaround
     
+    // Enable being notified on disconnect
+    UHIEN |= _BV(DDISCE);
+    
     UHWCON |= _BV(UIMOD) | _BV(UVREGE);    // host mode and enable pad regulator
 
     // Disable ID transtion and VBUS transition interrupts
@@ -60,7 +63,7 @@ void usb_reset_bus()
     UHCON |= _BV(RESET);
     
     // Wait for reset to complete
-    while((UHCON & _BV(RESET)) != 0)
+    while(IS_SET(UHCON, RESET))
     {
         _delay_ms(1);
     }
@@ -86,7 +89,7 @@ int usb_read_data(const enum PidName token, pipe_descriptor_t* pipe, void* data,
     const uint8_t size)
 {
     UPNUM = pipe->id;
-    if((UPSTAX & _BV(CFGOK)) != 0)
+    if(IS_CLEAR(UPSTAX, CFGOK))
     {
         // This pipe isn't configured
         return EXIT_FAILURE;
@@ -106,7 +109,7 @@ int usb_read_data(const enum PidName token, pipe_descriptor_t* pipe, void* data,
     UPCONX &= ~_BV(INMODE);
     UPINRQX = num_in_xfers;
     
-    if((UPINTX & _BV(FIFOCON)) != 0)
+    if(IS_SET(UPINTX, FIFOCON))
     {
         // This is an error -- why isn't this bank free?
         return EXIT_FAILURE;
@@ -141,12 +144,12 @@ int usb_write_data(const enum PidName token, pipe_descriptor_t* pipe, void* data
     const uint8_t size)
 {
     UPNUM = pipe->id;
-    if((UPSTAX & _BV(CFGOK)) != 0)
+    if(IS_CLEAR(UPSTAX, CFGOK))
     {
         // This pipe isn't configured
         return EXIT_FAILURE;
     }
-    else if((UPCONX & _BV(PFREEZE)) != 0)
+    else if(IS_SET(UPCONX, PFREEZE))
     {
         // This pipe is frozen for some reason
         return EXIT_FAILURE;
@@ -156,7 +159,7 @@ int usb_write_data(const enum PidName token, pipe_descriptor_t* pipe, void* data
     UPCFG0X &= ~(_BV(PTOKEN1) | _BV(PTOKEN0));
     UPCFG0X |= (token << PTOKEN0);
     
-    while((UPINTX & _BV(FIFOCON)) == 0)
+    while(IS_SET(UPINTX, FIFOCON))
     {
         // Wait for current operation to finish
         _delay_ms(1);
@@ -192,7 +195,7 @@ int usb_configure_pipe(pipe_descriptor_t* pipe)
     
     UPCFG1X = (pipe->size << PSIZE0) | (pipe->num_banks << PBK0) << _BV(ALLOC);
     
-    if((UPSTAX & _BV(CFGOK)) != 0)
+    if(IS_SET(UPSTAX, CFGOK))
     {
         UPCFG2X = pipe->int_freq;
     }

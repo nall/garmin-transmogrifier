@@ -25,7 +25,7 @@ int serial_init(const enum UARTMode mode, const uint32_t baud, const enum CharSi
 
 static void serial_send_char(const char c)
 {
-    while((UCSR1A & _BV(UDRE1)) == 0)
+    while(IS_CLEAR(UCSR1A, UDRE1))
     {
         // Wait for empty transmit buffer
     }
@@ -46,4 +46,6 @@ int serial_display(char* string)
 int serial_clear()
 {
     serial_send_char(0x01);
+    
+    return EXIT_SUCCESS;
 }
