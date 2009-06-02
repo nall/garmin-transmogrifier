@@ -92,7 +92,7 @@
 #endif
 
 
-#define Sleep_instruction()      {__asm__("SLEEP");}
+#define Sleep_instruction()      {__asm__ __volatile__("SLEEP"::);}
 
 //Backward compatibility
 #define Set_power_down_mode()      set_power_down_mode()

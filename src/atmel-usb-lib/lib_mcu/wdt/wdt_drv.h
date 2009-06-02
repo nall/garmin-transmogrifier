@@ -107,7 +107,7 @@ void wdtdrv_interrupt_enable( U8 timeout );
 void wdtdrv_interrupt_reset_enable( U8 timeout );
 
 
-#define Soft_reset()             {asm("jmp 0000");}
+#define Soft_reset()             {__asm__ __volatile__("jmp 0000"::);}
 
 //! @}
 
