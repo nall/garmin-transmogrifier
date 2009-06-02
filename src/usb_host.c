@@ -1,6 +1,6 @@
-#include <avr/io.h>
+#include "usb_host.h"
 #include <util/delay.h>
-#include "usb_defines.h"
+#include <avr/io.h>
 
 static void enable_pll()
 {
@@ -54,21 +54,7 @@ void usb_init()
     USBCON |= _BV(USBE) | _BV(HOST) | _BV(OTGPADE);
 }
 
-void device_attached()
-{
-    enable_pll();
-                  
-    // Delay for USB spec's wait time for VBus to stabilize upon insertion
-    // USB 2.0 Section 9.1.2
-    _delay_ms(100);
-}
-
-void device_detached()
-{
-    disable_pll();
-}
-
-void reset_bus()
+void usb_reset_bus()
 {
     UHCON |= _BV(RESET);
     
@@ -79,12 +65,78 @@ void reset_bus()
     }
 }
 
-void set_address()
+void usb_device_attached()
 {
+    enable_pll();
+                  
+    // Delay for USB spec's wait time for VBus to stabilize upon insertion
+    // USB 2.0 Section 9.1.2
+    _delay_ms(100);
     
+    usb_reset_bus();
 }
 
-int write_data(const enum PidName token, pipe_descriptor_t* pipe, void* data,
+void usb_device_detached()
+{
+    disable_pll();
+}
+
+int usb_read_data(const enum PidName token, pipe_descriptor_t* pipe, void** data,
+    const uint8_t size)
+{
+    UPNUM = pipe->id;
+    if((UPSTAX & _BV(CFGOK)) != 0)
+    {
+        // This pipe isn't configured
+        return EXIT_FAILURE;
+    }
+
+    // Override token to specified token
+    UPCFG0X &= ~(_BV(PTOKEN1) | _BV(PTOKEN0));
+    UPCFG0X |= (token << PTOKEN0);
+
+    const uint8_t num_in_xfers = (size / PIPE_SIZE(pipe)) - 1; // Zero-Based
+    if(num_in_xfers > 0)
+    {
+        // FIXME: be able to buffer longer requests
+        return EXIT_FAILURE;
+    }
+    
+    UPCONX &= ~_BV(INMODE);
+    UPINRQX = num_in_xfers;
+    
+    if((UPINTX & _BV(FIFOCON)) != 0)
+    {
+        // This is an error -- why isn't this bank free?
+        return EXIT_FAILURE;
+    }
+
+    // Start the transfer
+    UPCONX |= _BV(PFREEZE);
+    
+    // Sanity check that all the bytes we read made it into the FIFO count
+    uint16_t bytecount = (UPBCHX << 8) | UPBCLX;
+    while(bytecount < size)
+    {
+        // Wait for all data to arrive
+        _delay_ms(1);
+        bytecount = (UPBCHX << 8) | UPBCLX;
+    }
+    
+    // Read the data from the fifo
+    uint8_t* bytedata = (uint8_t*)data;
+    for(uint16_t i = 0; i < size; ++i)
+    {
+        bytedata[i] = UPDATX;
+    }
+    
+    // Free the current bank
+    UPINTX &= ~_BV(FIFOCON);
+    
+    return EXIT_SUCCESS;
+}
+
+int usb_write_data(const enum PidName token, pipe_descriptor_t* pipe, void* data,
     const uint8_t size)
 {
     UPNUM = pipe->id;
@@ -102,7 +154,6 @@ int write_data(const enum PidName token, pipe_descriptor_t* pipe, void* data,
     // Override token to specified token
     UPCFG0X &= ~(_BV(PTOKEN1) | _BV(PTOKEN0));
     UPCFG0X |= (token << PTOKEN0);
-    
     
     while((UPINTX & _BV(FIFOCON)) == 0)
     {
@@ -130,21 +181,7 @@ int write_data(const enum PidName token, pipe_descriptor_t* pipe, void* data,
     return EXIT_SUCCESS;
 }
 
-int issue_setup_cmd(pipe_descriptor_t* pipe, usb_setup_data_t* cmd, void** result)
-{
-    int rc = write_data(SETUP, pipe, cmd, sizeof(usb_setup_data_t));
-    if(rc == 0)
-    {
-        if(result != 0)
-        {
-            // TODO: copy input buffer to result
-        }        
-    }
-    
-    return EXIT_SUCCESS;
-}
-
-int configure_pipe(pipe_descriptor_t* pipe)
+int usb_configure_pipe(pipe_descriptor_t* pipe)
 {
     UPNUM = pipe->id;
     

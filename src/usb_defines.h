@@ -1,3 +1,8 @@
+#ifndef __USB_DEFINES_H__
+#define __USB_DEFINES_H__
+
+#include <inttypes.h>
+
 enum PipeType
 {
     Control = 0,
@@ -36,6 +41,8 @@ enum PipeBankNum
 
 #define EXIT_SUCCESS 1
 #define EXIT_FAILURE 0
+
+#define PIPE_SIZE(pipe) (8 << (pipe)->size)
 
 enum DescriptorType
 {
@@ -165,3 +172,5 @@ typedef struct usb_endpoint_descriptor
     uint16_t wMaxPacketSize;
     uint8_t bInterface;
 } usb_endpoint_descriptor_t;
+
+#endif // __USB_DEFINES_H__
