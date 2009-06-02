@@ -1,0 +1,169 @@
+#include <avr/io.h>
+#include <util/delay.h>
+#include "usb_defines.h"
+
+static void enable_pll()
+{
+    // Enable PLL and wait for it to lock
+    PLLCSR = 0; // Clear PLOCK
+    
+    // Valid PLL values:
+    // PLLP2    PLLP1   PLLP0   ExtXTAL
+    //     0        1       1         8MHz
+    //     1        0       1         16MHz  // AT90USB128x ONLY
+    //     1        1       0         16MHz  // AT90USB64x * ATmega32U6 ONLY
+    PLLCSR |= ~_BV(PLLP2) | _BV(PLLP1) | _BV(PLLP0) | _BV(PLLE);
+
+    // Poll until PLL locks
+    do
+    {
+        _delay_ms(100);
+    } while((PLLCSR & _BV(PLOCK)) == 0);
+}
+
+static inline void disable_pll()
+{
+    PLLCSR = 0;
+}
+
+void usb_init()
+{
+    // Ensure USB is disabled before mucking with UWHCON
+    USBCON &= ~_BV(USBE);
+    
+    // Select USB mode (host/device) via UIMOD
+    UHWCON &= ~_BV(UIDE);
+    
+    // Implement workaround in spec 21.10.2
+    UHWCON &= ~(_BV(UVCONE) | _BV(UVREGE));
+    OTGCON &= ~_BV(VBUSHWC);
+    PORTE |= _BV(7);
+    OTGIEN |= _BV(SRPE);
+    // End 21.10.2 workaround
+    
+    UHWCON |= _BV(UIMOD) | _BV(UVREGE);    // host mode and enable pad regulator
+
+    // Disable ID transtion and VBUS transition interrupts
+    USBCON &= ~(_BV(IDTE) | _BV(VBUSTE));
+    
+    // Being a host means clearing the detach bit before setting HOST below
+    // (spec 23.2)
+    UDCON &= ~_BV(DETACH);
+    
+    // Enable USB, set us as a host and enable VBUS pad.
+    USBCON |= _BV(USBE) | _BV(HOST) | _BV(OTGPADE);
+}
+
+void device_attached()
+{
+    enable_pll();
+                  
+    // Delay for USB spec's wait time for VBus to stabilize upon insertion
+    // USB 2.0 Section 9.1.2
+    _delay_ms(100);
+}
+
+void device_detached()
+{
+    disable_pll();
+}
+
+void reset_bus()
+{
+    UHCON |= _BV(RESET);
+    
+    // Wait for reset to complete
+    while((UHCON & _BV(RESET)) != 0)
+    {
+        _delay_ms(1);
+    }
+}
+
+void set_address()
+{
+    
+}
+
+int write_data(const enum PidName token, pipe_descriptor_t* pipe, void* data,
+    const uint8_t size)
+{
+    UPNUM = pipe->id;
+    if((UPSTAX & _BV(CFGOK)) != 0)
+    {
+        // This pipe isn't configured
+        return EXIT_FAILURE;
+    }
+    else if((UPCONX & _BV(PFREEZE)) != 0)
+    {
+        // This pipe is frozen for some reason
+        return EXIT_FAILURE;
+    }
+
+    // Override token to specified token
+    UPCFG0X &= ~(_BV(PTOKEN1) | _BV(PTOKEN0));
+    UPCFG0X |= (token << PTOKEN0);
+    
+    
+    while((UPINTX & _BV(FIFOCON)) == 0)
+    {
+        // Wait for current operation to finish
+        _delay_ms(1);
+    }
+    
+    // Write the data into the fifo
+    uint8_t* bytedata = (uint8_t*)data;
+    for(uint16_t i = 0; i < size; ++i)
+    {
+        UPDATX = bytedata[i];
+    }
+    
+    // Sanity check that all the bytes we read made it into the FIFO count
+    uint16_t bytecount = (UPBCHX << 8) | UPBCLX;
+    if(bytecount != size)
+    {
+        return EXIT_FAILURE;
+    }
+    
+    // Send the bank
+    UPINTX &= ~_BV(FIFOCON);
+    
+    return EXIT_SUCCESS;
+}
+
+int issue_setup_cmd(pipe_descriptor_t* pipe, usb_setup_data_t* cmd, void** result)
+{
+    int rc = write_data(SETUP, pipe, cmd, sizeof(usb_setup_data_t));
+    if(rc == 0)
+    {
+        if(result != 0)
+        {
+            // TODO: copy input buffer to result
+        }        
+    }
+    
+    return EXIT_SUCCESS;
+}
+
+int configure_pipe(pipe_descriptor_t* pipe)
+{
+    UPNUM = pipe->id;
+    
+    UPCONX |= PEN;
+    
+    UPCFG0X = (pipe->type << PTYPE0) | (pipe->token << PTOKEN0) | (pipe->endpoint_target << PEPNUM0);
+    
+    UPCFG1X = (pipe->size << PSIZE0) | (pipe->num_banks << PBK0) << _BV(ALLOC);
+    
+    if((UPSTAX & _BV(CFGOK)) != 0)
+    {
+        UPCFG2X = pipe->int_freq;
+    }
+    else
+    {
+        return EXIT_FAILURE;
+    }
+    
+    // pipe now activated and frozen
+    return EXIT_SUCCESS;
+}
+

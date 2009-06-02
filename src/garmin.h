@@ -45,17 +45,10 @@
 #ifndef GARMIN_H
 #define GARMIN_H
 
-#ifdef _WIN32
-typedef unsigned char u_int8_t;
-typedef unsigned short u_int16_t;
-typedef short int16_t;
-typedef unsigned long u_int32_t;
-typedef long int32_t;
-#else
-#include <sys/types.h>
-#endif
-
-#pragma pack(push, 1)
+#include <stdint.h>
+typedef uint8_t u_int8_t;
+typedef uint16_t u_int16_t;
+typedef uint32_t u_int32_t;
 
 typedef struct {
     u_int8_t    tag;
@@ -102,8 +95,6 @@ typedef struct {
     u_int16_t       rcvr_wn;
     cpo_rcv_sv_data sv[12];
 } cpo_rcv_data;
-
-#pragma pack(pop)
 
 enum {
     Pid_Command_Data = 10,

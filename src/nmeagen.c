@@ -102,7 +102,7 @@ void nmea_getutc(D800_Pvt_Data_Type *pvt, char *utctime, char *utcdate) {
 
         year -= 2000;
 
-        sprintf(utcdate, "%02d%02d%02d", day, month, year);
+        sprintf(utcdate, "%02ld%02ld%02ld", day, month, year);
     }
 }
 
@@ -170,7 +170,7 @@ int nmea_gpgga(D800_Pvt_Data_Type *pvt, cpo_sat_data *sat, char *nmeastc) {
     }
 
     sprintf(buf, "GPGGA,%s,%s,%s,%d,%02d,,%.1f,M,%.1f,M,,", utc, slat, slon, fix, nsat,
-        pvt->msl_hght + pvt->alt, -pvt->msl_hght);
+        pvt->msl_hght + (double)pvt->alt, (double)(-pvt->msl_hght));
     
     cksum = nmea_cksum(buf);
 
