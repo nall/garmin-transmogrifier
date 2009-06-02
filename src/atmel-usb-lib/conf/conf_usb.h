@@ -66,7 +66,7 @@
       //! @brief ENABLE to activate the device software library support
       //!
       //! Possible values ENABLE or DISABLE
-      #define USB_DEVICE_FEATURE          ENABLED
+      #define USB_DEVICE_FEATURE          DISABLED
 
    //! @}
 

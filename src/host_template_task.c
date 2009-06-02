@@ -46,7 +46,6 @@
 #include "modules/usb/host_chap9/usb_host_task.h"
 #include "modules/usb/host_chap9/usb_host_enum.h"
 #include "lib_mcu/usb/usb_drv.h"
-#include "lib_mcu/uart/uart_lib.h"
 
 
 //_____ M A C R O S ________________________________________________________
@@ -73,14 +72,6 @@
  */
 void host_template_task_init(void)
 {
-   U8 i;
-   for(i=0;i<sizeof(tab);i++)
-   {
-      tab[i]=i;
-   }
-   Leds_init();
-   Joy_init();
-   Hwb_button_init();
 }
 
 //!
@@ -172,17 +163,6 @@ void host_template_task(void)
          }
          Host_ack_in_received(); Host_send_in();
       }
-
-      // Here an example of an applicative request to go to USB suspend ...
-      if(Is_hwb())
-      {
-         Host_request_suspend();
-      }
-   }
-   // Here an applicative example of resume request...
-   if(Is_host_suspended() && Is_btn_middle())
-   {
-      Host_request_resume();
    }
 
    //Device disconnection...

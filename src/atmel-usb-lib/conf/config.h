@@ -66,7 +66,7 @@
 #undef USE_ADC
 //! To include proper target hardware definitions, select
 //! target board (USBKEY or STK525)
-#define TARGET_BOARD STK525
+//#define TARGET_BOARD STK525
 
 #if (TARGET_BOARD==USBKEY)
    //! @warning for #define USBKEY_HAS_321_DF, only first prototypes versions have AT45DB321C memories
@@ -76,12 +76,19 @@
 #elif (TARGET_BOARD==STK525)
    #include "lib_board\stk_525\stk_525.h"
 #else
-   #error TARGET_BOARD must be defined somewhere
+   //#error TARGET_BOARD must be defined somewhere
 #endif
 
 
 //! CPU core frequency in kHz
 #define FOSC 8000
+#ifndef F_CPU
+    #error F_CPU must be defined in Hz
+    #if (F_CPU != 80000000)
+        #error F_CPU Doesn't match FOSC
+    #endif
+#endif // ifndef F_CPU
+
 
 
 // -------- END Generic Configuration -------------------------------------

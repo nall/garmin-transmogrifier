@@ -1,4 +1,4 @@
 obj
-main.*
+garmin-transmogrifier.*
 doc/AVR*
 src/usblib
