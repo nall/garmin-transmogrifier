@@ -100,4 +100,5 @@ int main()
 {
     serial_init(umAsync, 9600, csSize8, pNoParity, sbOneStopBit);
     usb_init();
+    return 0;
 }

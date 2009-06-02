@@ -1,4 +1,4 @@
 obj
 main.*
-src/atmel*
 doc/AVR*
+src/usblib
