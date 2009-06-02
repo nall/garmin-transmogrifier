@@ -1,3 +1,4 @@
 obj
 main.*
 src/atmel*
+doc/AVR*

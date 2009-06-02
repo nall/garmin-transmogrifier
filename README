@@ -1,0 +1,12 @@
+This project is to create hardware and software to connect a USB-based Garmin GPS to a RS-232 based system. Further, it confgures the GPS to periodically send its coordinates and converts those to NMEA standard sentences before sending it to the RS-232 port.
+
+Useful links:
+
+AT90USB647 Reference:
+http://www.atmel.com/dyn/resources/prod_documents/7593S.pdf
+
+AVR USB Library for AT90USBxxx Microcontrollers:
+http://www.atmel.com/dyn/resources/prod_documents/doc7675.pdf
+
+Garmin Device Interface Protocol Information:
+http://www8.garmin.com/support/commProtocol.html

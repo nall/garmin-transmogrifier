@@ -3,80 +3,94 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>src/serial_disp.c</string>
+	<string>src/main.c</string>
 	<key>documents</key>
 	<array>
 		<dict>
 			<key>filename</key>
-			<string>src/usb_defines.h</string>
-			<key>lastUsed</key>
-			<date>2009-06-02T05:58:37Z</date>
-		</dict>
-		<dict>
-			<key>filename</key>
-			<string>src/serial_disp.h</string>
-			<key>lastUsed</key>
-			<date>2009-06-02T06:23:57Z</date>
-		</dict>
-		<dict>
-			<key>filename</key>
 			<string>src/common.h</string>
 			<key>lastUsed</key>
-			<date>2009-06-02T06:03:49Z</date>
-		</dict>
-		<dict>
-			<key>filename</key>
-			<string>src/serial_disp.c</string>
-			<key>lastUsed</key>
-			<date>2009-06-02T06:30:53Z</date>
-			<key>selected</key>
-			<true/>
+			<date>2009-06-02T07:04:09Z</date>
 		</dict>
 		<dict>
 			<key>filename</key>
 			<string>src/main.c</string>
 			<key>lastUsed</key>
-			<date>2009-06-02T06:16:17Z</date>
+			<date>2009-06-02T07:42:09Z</date>
+			<key>selected</key>
+			<true/>
 		</dict>
 		<dict>
 			<key>filename</key>
-			<string>src/usb_host.h</string>
+			<string>src/serial_disp.c</string>
 			<key>lastUsed</key>
-			<date>2009-06-02T06:00:00Z</date>
+			<date>2009-06-02T07:10:10Z</date>
+		</dict>
+		<dict>
+			<key>filename</key>
+			<string>src/serial_disp.h</string>
+			<key>lastUsed</key>
+			<date>2009-06-02T06:33:55Z</date>
+		</dict>
+		<dict>
+			<key>filename</key>
+			<string>src/usb_defines.h</string>
+			<key>lastUsed</key>
+			<date>2009-06-02T06:33:54Z</date>
 		</dict>
 		<dict>
 			<key>filename</key>
 			<string>src/usb_host.c</string>
 			<key>lastUsed</key>
-			<date>2009-06-02T06:00:55Z</date>
+			<date>2009-06-02T07:42:09Z</date>
+		</dict>
+		<dict>
+			<key>filename</key>
+			<string>src/usb_host.h</string>
+			<key>lastUsed</key>
+			<date>2009-06-02T07:39:56Z</date>
 		</dict>
 	</array>
 	<key>fileHierarchyDrawerWidth</key>
 	<integer>200</integer>
 	<key>metaData</key>
 	<dict>
-		<key>src/main.c</key>
+		<key>src/common.h</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>18</integer>
+				<integer>49</integer>
 				<key>line</key>
-				<integer>64</integer>
+				<integer>7</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
+		<key>src/main.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>26</integer>
+				<key>line</key>
+				<integer>95</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>27</integer>
+		</dict>
 		<key>src/serial_disp.c</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>30</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>15</integer>
+				<integer>28</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -109,21 +123,21 @@
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>0</integer>
+			<integer>56</integer>
 		</dict>
 		<key>src/usb_host.c</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>74</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>84</integer>
+				<integer>157</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>52</integer>
+			<integer>86</integer>
 		</dict>
 		<key>src/usb_host.h</key>
 		<dict>
@@ -145,15 +159,18 @@
 		<string>src/usb_host.c</string>
 		<string>src/usb_host.h</string>
 		<string>src/main.c</string>
+		<string>src/common.h</string>
 		<string>src/serial_disp.c</string>
 		<string>src/serial_disp.h</string>
 		<string>src/usb_defines.h</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
+	<false/>
+	<key>showFileHierarchyPanel</key>
 	<true/>
 	<key>treeState</key>
 	<dict/>
 	<key>windowFrame</key>
-	<string>{{638, 94}, {1258, 1247}}</string>
+	<string>{{131, 0}, {1258, 878}}</string>
 </dict>
 </plist>

@@ -7,17 +7,20 @@
 
 #define DEBUG 1
 
+void device_connected_irq();
+void device_disconnected_irq();
+
 ISR(USB_GEN_vect)
 {
     if(IS_SET(OTGINT, SRPI))
     {
         OTGINT &= ~_BV(SRPI);
-        usb_device_attached();
+        device_connected_irq();
     }
     else if(IS_SET(UHINT, DDISCI))
     {
         UHINT &= ~_BV(DDISCI);
-        usb_device_detached();
+        device_disconnected_irq();
     }
     reti();
 }
@@ -86,6 +89,11 @@ void device_connected_irq()
         }
 #endif // DEBUG
     }
+}
+
+void device_disconnected_irq()
+{
+    usb_device_detached();
 }
 
 int main()

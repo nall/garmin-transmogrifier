@@ -36,11 +36,12 @@ void usb_init()
     UHWCON &= ~_BV(UIDE);
     
     // Implement workaround in spec 21.10.2
-    UHWCON &= ~(_BV(UVCONE) | _BV(UVREGE));
-    OTGCON &= ~_BV(VBUSHWC);
-    PORTE |= _BV(7);
-    OTGIEN |= _BV(SRPE);
-    // End 21.10.2 workaround
+    {
+        UHWCON &= ~(_BV(UVCONE) | _BV(UVREGE));
+        OTGCON &= ~_BV(VBUSHWC);
+        PORTE |= _BV(7);
+        OTGIEN |= _BV(SRPE);        
+    }
     
     // Enable being notified on disconnect
     UHIEN |= _BV(DDISCE);
