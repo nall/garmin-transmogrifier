@@ -1,4 +1,5 @@
 #include "usb_host.h"
+#include "common.h"
 #include <util/delay.h>
 #include <avr/io.h>
 
@@ -81,7 +82,7 @@ void usb_device_detached()
     disable_pll();
 }
 
-int usb_read_data(const enum PidName token, pipe_descriptor_t* pipe, void** data,
+int usb_read_data(const enum PidName token, pipe_descriptor_t* pipe, void* data,
     const uint8_t size)
 {
     UPNUM = pipe->id;

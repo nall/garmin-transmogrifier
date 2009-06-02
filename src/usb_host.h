@@ -10,7 +10,7 @@ int usb_configure_pipe(pipe_descriptor_t* pipe);
 
 int usb_write_data(const enum PidName token, pipe_descriptor_t* pipe, void* data,
     const uint8_t size);
-int usb_read_data(const enum PidName token, pipe_descriptor_t* pipe, void** data,
+int usb_read_data(const enum PidName token, pipe_descriptor_t* pipe, void* data,
     const uint8_t size);
 
 #endif // __USB_HOST_H__

@@ -27,7 +27,7 @@ PROGRAMMER = -c stk500v2 -P /dev/tty.usbmodemfd13411
 
 OBJDIR     = obj
 SRCDIR     = src
-SRC        = nmeagen.c main.c usb_host.c
+SRC        = nmeagen.c main.c usb_host.c serial_disp.c
 
 OBJECTS    = $(patsubst %.c,%.o,$(SRC))
 FUSES      = -U hfuse:w:0xff:m -U lfuse:w:0x69:m

@@ -1,6 +1,8 @@
 
 #include "usb_defines.h"
 #include "usb_host.h"
+#include "serial_disp.h"
+#include "common.h"
 
 void show_error(const uint16_t code)
 {
@@ -60,5 +62,6 @@ void device_connected_irq()
 
 int main()
 {
+    serial_init(umAsync, 9600, csSize8, pNoParity, sbOneStopBit);
     usb_init();
 }

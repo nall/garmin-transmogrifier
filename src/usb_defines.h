@@ -39,9 +39,6 @@ enum PipeBankNum
     Invalid2 = 3
 };
 
-#define EXIT_SUCCESS 1
-#define EXIT_FAILURE 0
-
 #define PIPE_SIZE(pipe) (8 << (pipe)->size)
 
 enum DescriptorType
