@@ -53,11 +53,8 @@
 void nmea_getutc(D800_Pvt_Data_Type *pvt, char *utctime, char *utcdate);
 void nmea_fmtlat(double lat, char *latstr);
 void nmea_fmtlon(double lon, char *lonstr);
-int nmea_gpgga(D800_Pvt_Data_Type *pvt, cpo_sat_data *sat, char *nmeastc);
 int nmea_gprmc(D800_Pvt_Data_Type *pvt, char *nmeastc);
 int nmea_gpgll(D800_Pvt_Data_Type *pvt, char *nmeastc);
-int nmea_gpgsa(D800_Pvt_Data_Type *pvt, cpo_sat_data *sat, char *nmeastc);
-int nmea_gpgsv(cpo_sat_data *sat, char *nmeastc);
 unsigned char nmea_cksum(char *str);
 
 #endif

@@ -9,6 +9,7 @@ MCU = at90usb647
 # Source files
 CSRCS = \
   src/main.c\
+  src/nmeagen.c\
   src/garmin_transmogrifier.c\
   src/serial_disp.c\
   src/atmel-usb-lib/lib_mcu/usb/usb_drv.c\

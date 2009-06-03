@@ -73,16 +73,16 @@ typedef struct {
     float   epe;
     float   eph;
     float   epv;
-    int16_t fix;
-    double  tow;
-    double  lat;
-    double  lon;
+    uint16_t fix;
+    uint64_t  tow;
+    uint64_t  lat;
+    uint64_t  lon;
     float   east;
     float   north;
     float   up;
     float   msl_hght;
     int16_t leap_scnds;
-    int32_t wn_days;
+    uint32_t wn_days;
 } D800_Pvt_Data_Type;
 
 enum {
