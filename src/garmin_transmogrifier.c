@@ -29,6 +29,7 @@
 */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "config.h"
 #include "conf_usb.h"
@@ -39,8 +40,6 @@
 #include "garmin.h"
 #include "serial_disp.h"
 
-#define DEBUG 1
-
 const uint8_t GT_PIPE_IN_INT = 0;
 const uint8_t GT_PIPE_OUT_BULK = 1;
 const uint8_t GT_PIPE_IN_BULK = 2;
@@ -48,7 +47,7 @@ const uint8_t GT_PIPE_IN_BULK = 2;
 uint8_t pipes[3];
 
 uint8_t pktbuf[GARMIN_MAX_PKTSIZE];
-Packet_t* glbpkt = (Packet_t*)pktbuf;
+Packet_t* gblpkt = (Packet_t*)pktbuf;
 uint16_t pktoffset = 0;
 
 void show_error(char* const msg)
@@ -61,7 +60,6 @@ void show_error(char* const msg)
 static void sanity_check_ep_type(const uint8_t device, const uint8_t interface,
     const uint8_t ep, const uint8_t ep_addr)
 {
-#ifdef DEBUG
     // Sanity check EP types
     {
         const uint8_t ep_type = usb_tree.device[device].interface[interface].ep[ep].ep_type;
@@ -99,7 +97,6 @@ static void sanity_check_ep_type(const uint8_t device, const uint8_t interface,
             }
         }
     }
-#endif // DEBUG                    
 }
 
 static void intialize_pipes()
@@ -154,51 +151,117 @@ static void intialize_pipes()
     }
 }
 
-void garmin_recvpkt(const uint8_t pipe_id)
+static void init_packet(const uint8_t type, const uint8_t id)
 {
+    memset(pktbuf, 0, GARMIN_MAX_PKTSIZE);
+    gblpkt->mPacketType = type;
+    gblpkt->mPacketId = id; 
+}
+
+void garmin_recvpkt()
+{
+    static uint8_t cur_in_pipe = GT_PIPE_IN_INT;
+    
+    // Zero-out the packet structure
+    init_packet(0, 0);
+    
     U16 nbytes = GARMIN_HEADER_SIZE;
-    uint8_t status = host_get_data(pipes[pipe_id], &nbytes, (U8*)glbpkt);
+    uint8_t status = host_get_data(pipes[cur_in_pipe], &nbytes, (U8*)gblpkt);
     if(nbytes != GARMIN_HEADER_SIZE || status != 0)
     {
         show_error("host_get_data couldn't return GARMIN_HEADER_SIZE bytes");
     }
     
-    if(glbpkt->mDataSize > 0)
+    if(gblpkt->mDataSize > 0)
     {
-        nbytes = glbpkt->mDataSize;
-        status = host_get_data(pipes[pipe_id], &nbytes, (U8*)(&(glbpkt->mData)));        
-        if(nbytes != glbpkt->mDataSize || status != 0)
+        nbytes = gblpkt->mDataSize;
+        status = host_get_data(pipes[cur_in_pipe], &nbytes, (U8*)(&(gblpkt->mData)));        
+        if(nbytes != gblpkt->mDataSize || status != 0)
         {
             show_error("host_get_data couldn't return mDataSize bytes");
         }
     }    
 }
 
-void garmin_sendpkt(Packet_t* pkt)
+void garmin_sendpkt()
 {
-    const uint16_t nbytes = GARMIN_HEADER_SIZE + pkt->mDataSize;
-    const uint8_t status = host_send_data(pipes[GT_PIPE_OUT_BULK], nbytes, (U8*)glbpkt);
+    const uint16_t nbytes = GARMIN_HEADER_SIZE + gblpkt->mDataSize;
+    const uint8_t status = host_send_data(pipes[GT_PIPE_OUT_BULK], nbytes, (U8*)gblpkt);
     if(status != 0)
     {
         show_error("Error sending packet");
     }
 }
 
-void garmin_recvpkt_bulk(Packet_t* pkt)
+void garmin_start_session()
 {
+    init_packet(Prot_USB, Pid_Start_Session);
+    garmin_sendpkt();
+
+    do
+    {
+        // Ingore all packets until we get this, per the Garmin Spec 3.2.3.3
+        garmin_recvpkt();        
+    } while(gblpkt->mPacketId != Pid_Session_Started);
     
+#ifdef DEBUG
+    char buf[512];
+    uint32_t unitID = 0;
+    
+    for(uint8_t i = 0; i < 4; ++i)
+    {
+        unitID |= gblpkt->mData[i] << (i*8);        
+    }
+    
+    sprintf(buf, "UnitID: 0x%lx", unitID);
+    serial_display(buf);
+#endif // DEBUG
 }
 
-void garmin_recvpkt_int(const uint8_t status, const uint16_t nbytes)
+bool garmin_check_protocol_support(const uint8_t tag, const uint16_t value)
 {
-    if(status != PIPE_GOOD)
+    init_packet(Prot_Application, Pid_Product_Rqst);
+    garmin_sendpkt();
+    
+    // Product_Data_Type
     {
-        show_error("Bad status in garmin_recvpkt_int");
+        garmin_recvpkt();
+        #ifdef DEBUG
+        if(gblpkt->mPacketId != Pid_Product_Data)
+        {
+            show_error("Non-Product Data Type");
+        }
+        #endif // DEBUG        
     }
-    if(nbytes >= GARMIN_HEADER_SIZE)
+
+    // Check for zero or more Ext Product packets
     {
-        // Check if we have a well-formed packet
+        do
+        {
+            garmin_recvpkt();
+        } while(gblpkt->mPacketId == Pid_Ext_Product_Data);        
     }
+
+    // Get Protocol Array
+    if(gblpkt->mPacketId == Pid_Protocol_Array)
+    {
+        const uint16_t num_types = gblpkt->mDataSize / sizeof(Protocol_Data_Type);
+        Protocol_Data_Type* cur_type = (Protocol_Data_Type*)(&(gblpkt->mData[0]));
+        for(uint16_t i = 0; i < num_types; ++i)
+        {
+            if(cur_type->mTag == tag && cur_type->mData == value)
+            {
+                // We found a match!
+                return TRUE;
+            }
+        }
+    }    
+    else
+    {
+        show_error("Unexpected A000-A001 state");
+    }
+    
+    return FALSE;
 }
 
 void garmin_transmogrifier_task_init(void)
@@ -217,6 +280,21 @@ void garmin_transmogrifier_task(void)
         {
             // setup the pipes array
             intialize_pipes();
+            garmin_start_session();
+            const bool supported = garmin_check_protocol_support(Tag_Appl_Prot_Id, 800);
+            if(supported == FALSE)
+            {
+                show_error("Data Type D800 is not supported");
+            }
+            else
+            {
+                // Initiate PVT transfers from the device
+                init_packet(Prot_Application, Pid_Command_Data);
+                gblpkt->mDataSize = 2;
+                gblpkt->mData[0] = Cmnd_Start_Pvt_Data;
+                gblpkt->mData[1] = 0;
+                garmin_sendpkt();
+            }
         }
     }
     

@@ -86,6 +86,30 @@ typedef struct {
 } D800_Pvt_Data_Type;
 
 enum {
+  Prot_USB = 0,
+  Prot_Application = 20  
+};
+
+enum {
+  Tag_Phys_Prot_Id = 'P',  
+  Tag_Link_Prot_Id = 'L',  
+  Tag_Appl_Prot_Id = 'A',  
+  Tag_Data_Type_Id = 'D'
+};
+
+enum {
+    // USB Protocol IDs
+    Pid_Data_Available = 2,
+    Pid_Start_Session = 5,
+    Pid_Session_Started = 6,
+    
+    // L000 IDs
+    Pid_Protocol_Array = 253,  // may not be implemented
+    Pid_Product_Rqst = 254,
+    Pid_Product_Data = 255,
+    Pid_Ext_Product_Data = 248, // may not be implemented
+    
+    // L001 IDs
     Pid_Command_Data = 10,
     Pid_Xfer_Cmplt = 12,
     Pid_Date_Time_Data = 14,
@@ -103,7 +127,7 @@ enum {
     Pid_Trk_Hdr = 99,
     Pid_SatData_Record = 114,
     Pid_FlightBook_Record = 134,
-    Pid_Lap = 149
+    Pid_Lap = 149    
 };
 
 enum {

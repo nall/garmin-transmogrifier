@@ -16,6 +16,7 @@ F_CPU = 80000000
 
 # Compile options common for all C compilation units.
 CFLAGS = $(COMMON)
+CFLAGS += -DDEBUG=1
 CFLAGS += -std=c99 -DF_CPU=$(F_CPU)
 CFLAGS += -Wall -gdwarf-2 -Os -fsigned-char 
 CFLAGS += -MD -MP -MT $(OUTPUT)/$(*F).o -MF $(OUTPUT)/dep/$(@F).d 
