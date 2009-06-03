@@ -50,9 +50,22 @@ typedef uint8_t u_int8_t;
 typedef uint16_t u_int16_t;
 typedef uint32_t u_int32_t;
 
+#define GARMIN_HEADER_SIZE  12
+#define GARMIN_MAX_PKTSIZE  512
+
 typedef struct {
-    u_int8_t    tag;
-    u_int16_t   data;
+    u_int8_t    mPacketType;
+    u_int8_t    mReserved1;
+    u_int16_t   mReserved2;
+    u_int16_t   mPacketId;
+    u_int16_t   mReserved3;
+    u_int32_t   mDataSize;
+    u_int8_t    mData[1];
+} Packet_t;
+
+typedef struct {
+    u_int8_t    mTag;
+    u_int16_t   mData;
 } Protocol_Data_Type;
 
 typedef struct {
@@ -71,30 +84,6 @@ typedef struct {
     int16_t leap_scnds;
     int32_t wn_days;
 } D800_Pvt_Data_Type;
-
-typedef struct {
-    u_int8_t    svid;
-    u_int16_t   snr;
-    u_int8_t    elev;
-    u_int16_t   azmth;
-    u_int8_t    status;
-} cpo_sat_data;
-
-typedef struct {
-    u_int32_t   cycles;
-    double      pr;
-    u_int16_t   phase;
-    u_int8_t    slp_dtct;
-    u_int8_t    snr_dbhz;
-    u_int8_t    svid;
-    u_int8_t    valid;
-} cpo_rcv_sv_data;
-
-typedef struct {
-    double          rcvr_tow;
-    u_int16_t       rcvr_wn;
-    cpo_rcv_sv_data sv[12];
-} cpo_rcv_data;
 
 enum {
     Pid_Command_Data = 10,

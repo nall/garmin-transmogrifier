@@ -58,27 +58,8 @@
 
 #include "conf/conf_scheduler.h" //!< Scheduler tasks declaration
 
-// Board defines (do not change these settings)
-#define  STK525   1
-#define  USBKEY   2
-
 //! Enable or not the ADC usage
 #undef USE_ADC
-//! To include proper target hardware definitions, select
-//! target board (USBKEY or STK525)
-//#define TARGET_BOARD STK525
-
-#if (TARGET_BOARD==USBKEY)
-   //! @warning for #define USBKEY_HAS_321_DF, only first prototypes versions have AT45DB321C memories
-   //! should be undefined for std series
-   #define USBKEY_HAS_321_DF
-   #include "lib_board\usb_key\usb_key.h"
-#elif (TARGET_BOARD==STK525)
-   #include "lib_board\stk_525\stk_525.h"
-#else
-   //#error TARGET_BOARD must be defined somewhere
-#endif
-
 
 //! CPU core frequency in kHz
 #define FOSC 8000
@@ -92,26 +73,6 @@
 
 
 // -------- END Generic Configuration -------------------------------------
-
-// UART Sample configuration, if we have one ... __________________________
-#define BAUDRATE        38400
-#define USE_UART2
-
-#define uart_putchar putchar
-#define r_uart_ptchar int
-#define p_uart_ptchar int
-
-
-
-
-// ADC Sample configuration, if we have one ... ___________________________
-
-//! ADC Prescaler value
-#define ADC_PRESCALER 64
-//! Right adjust
-#define ADC_RIGHT_ADJUST_RESULT 1
-//! AVCC As reference voltage (See adc_drv.h)
-#define ADC_INTERNAL_VREF  2
 
 //! @}
 

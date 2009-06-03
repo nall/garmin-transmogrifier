@@ -9,10 +9,11 @@ MCU = at90usb647
 # Source files
 CSRCS = \
   src/main.c\
+  src/garmin_transmogrifier.c\
   src/serial_disp.c\
-  src/host_template_task.c\
   src/atmel-usb-lib/lib_mcu/usb/usb_drv.c\
   src/atmel-usb-lib/lib_mcu/power/power_drv.c\
+  src/atmel-usb-lib/lib_mcu/wdt/wdt_drv.c\
   src/atmel-usb-lib/modules/common/scheduler/scheduler.c\
   src/atmel-usb-lib/modules/usb/host_chap9/usb_host_enum.c\
   src/atmel-usb-lib/modules/usb/host_chap9/usb_host_task.c\

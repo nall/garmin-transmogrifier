@@ -1,22 +1,22 @@
-#include <avr/interrupt.h>
-#include <stdio.h>
-#include "serial_disp.h"
-#include "common.h"
+#include "config.h"
+#include "modules/common/scheduler/scheduler.h"
+#include "lib_mcu/wdt/wdt_drv.h"
+#include "lib_mcu/power/power_drv.h"
 
-#define DEBUG 1
-
-void device_connected_irq();
-void device_disconnected_irq();
-
-void show_error(char* const msg)
+int main(void)
 {
-    serial_clear();
-    serial_display("ERROR: ");
-    serial_display(msg);
+    wdtdrv_disable();
+    Clear_prescaler();
+    scheduler();
+    return 0;
 }
 
-int main()
+#ifdef __GNUC__
+    char __low_level_init(void) __attribute__ ((section (".init3"), naked));
+#endif // __GNUC__
+
+char __low_level_init(void)
 {
-    serial_init(umAsync, 9600, csSize8, pNoParity, sbOneStopBit);
-    return 0;
+    Clear_prescaler();
+    return 1;
 }

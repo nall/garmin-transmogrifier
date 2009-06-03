@@ -48,10 +48,8 @@
 #define SCHEDULER_TYPE          SCHEDULER_FREE  // SCHEDULER_(TIMED|TASK|FREE|CUSTOM)
 #define Scheduler_task_1_init   usb_task_init
 #define Scheduler_task_1        usb_task
-#define Scheduler_task_2_init   device_template_task_init
-#define Scheduler_task_2        device_template_task
-#define Scheduler_task_4_init   host_template_task_init
-#define Scheduler_task_4        host_template_task
+#define Scheduler_task_2_init   garmin_transmogrifier_task_init
+#define Scheduler_task_2        garmin_transmogrifier_task
 //! @}
 
 #endif  //! _CONF_SCHEDULER_H_

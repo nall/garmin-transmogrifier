@@ -40,6 +40,7 @@
 #ifndef _CONF_USB_H_
 #define _CONF_USB_H_
 
+#include "common.h"
 #include "modules/usb/usb_commun.h"
 #include "modules/usb/usb_commun_hub.h"
 #include "modules/usb/usb_commun_hid.h"
@@ -98,8 +99,7 @@
    //!   #define VID_PID_TABLE      {VID1, number_of_pid_for_this_VID1, PID11_value,..., PID1X_Value \n
    //!                              ...\n
    //!                              ,VIDz, number_of_pid_for_this_VIDz, PIDz1_value,..., PIDzX_Value}
-   #define VID_PID_TABLE            {VID_ATMEL, 2, PID_MegaHIDMouse, 0x2014 \
-                                    ,0x0123, 3, 0x2000, 0x2100, 0x1258}
+   #define VID_PID_TABLE            {VID_GARMIN, 1, PID_GPSmap}
 
    //!   @brief CLASS/SUBCLASS_PROTOCOL supported table list
    //!
@@ -111,9 +111,7 @@
    //!   #define CLASS_SUBCLASS_PROTOCOL  {CLASS1, SUB_CLASS1,PROTOCOL1, \n
    //!                                     ...\n
    //!                                     CLASSz, SUB_CLASSz,PROTOCOLz}
-   #define CLASS_SUBCLASS_PROTOCOL     {\
-                                       0x00, 0x00, 0x00,\
-                                       0x00,0x55,0xAA}
+   #define CLASS_SUBCLASS_PROTOCOL     {0xFF, 0xFF, 0xFF}
 
    //! The size of RAM buffer reserved of descriptors manipulation
    #define SIZEOF_DATA_STAGE        250
@@ -125,7 +123,7 @@
    #define MAX_EP_PER_INTERFACE     3
 
    //! The maximum number of interface supported per device
-   #define MAX_INTERFACE_FOR_DEVICE 3
+   #define MAX_INTERFACE_FOR_DEVICE 1
 
    //! The maximum number of devices in the USB tree
    #define MAX_DEVICE_IN_USB_TREE   1

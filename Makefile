@@ -37,7 +37,7 @@ HEX_EEPROM_FLAGS += --set-section-flags=.eeprom="alloc,load"
 HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0
 
 # Include Directories
-INCLUDES = -Isrc/atmel-usb-lib -Isrc/atmel-usb-lib/conf -Isrc/atmel-usb-lib/lib_mcu -Isrc/atmel-usb-lib/common
+INCLUDES = -Isrc -Isrc/atmel-usb-lib -Isrc/atmel-usb-lib/conf -Isrc/atmel-usb-lib/lib_mcu -Isrc/atmel-usb-lib/common
 
 # Include Source files list and part informations
 include $(MAKECFG)
