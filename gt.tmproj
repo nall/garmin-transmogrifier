@@ -3,52 +3,18 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>src/main.c</string>
+	<string>src/garmin_transmogrifier.c</string>
 	<key>documents</key>
 	<array>
 		<dict>
-			<key>filename</key>
-			<string>src/common.h</string>
-			<key>lastUsed</key>
-			<date>2009-06-02T07:04:09Z</date>
-		</dict>
-		<dict>
-			<key>filename</key>
-			<string>src/main.c</string>
-			<key>lastUsed</key>
-			<date>2009-06-02T07:42:09Z</date>
-			<key>selected</key>
+			<key>expanded</key>
 			<true/>
-		</dict>
-		<dict>
-			<key>filename</key>
-			<string>src/serial_disp.c</string>
-			<key>lastUsed</key>
-			<date>2009-06-02T07:10:10Z</date>
-		</dict>
-		<dict>
-			<key>filename</key>
-			<string>src/serial_disp.h</string>
-			<key>lastUsed</key>
-			<date>2009-06-02T06:33:55Z</date>
-		</dict>
-		<dict>
-			<key>filename</key>
-			<string>src/usb_defines.h</string>
-			<key>lastUsed</key>
-			<date>2009-06-02T06:33:54Z</date>
-		</dict>
-		<dict>
-			<key>filename</key>
-			<string>src/usb_host.c</string>
-			<key>lastUsed</key>
-			<date>2009-06-02T07:42:09Z</date>
-		</dict>
-		<dict>
-			<key>filename</key>
-			<string>src/usb_host.h</string>
-			<key>lastUsed</key>
-			<date>2009-06-02T07:39:56Z</date>
+			<key>name</key>
+			<string>src</string>
+			<key>regexFolderFilter</key>
+			<string>!.*/(\.[^/]*|CVS|_darcs|_MTN|\{arch\}|blib|.*~\.nib|.*\.(framework|app|pbproj|pbxproj|xcode(proj)?|bundle))$</string>
+			<key>sourceDirectory</key>
+			<string>src</string>
 		</dict>
 	</array>
 	<key>fileHierarchyDrawerWidth</key>
@@ -69,19 +35,107 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
-		<key>src/main.c</key>
+		<key>src/garmin.h</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>26</integer>
+				<integer>10</integer>
 				<key>line</key>
-				<integer>95</integer>
+				<integer>85</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>56</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>2</integer>
+				<key>line</key>
+				<integer>85</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>20</integer>
+				<key>line</key>
+				<integer>85</integer>
+			</dict>
+		</dict>
+		<key>src/garmin_transmogrifier.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>33</integer>
+				<key>line</key>
+				<integer>106</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>27</integer>
+			<integer>82</integer>
+		</dict>
+		<key>src/garminusb2nmea.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>41</integer>
+				<key>line</key>
+				<integer>104</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>121</integer>
+		</dict>
+		<key>src/nmeagen.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>1</integer>
+				<key>line</key>
+				<integer>204</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>128</integer>
+		</dict>
+		<key>src/nmeagen.h</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>13</integer>
+				<key>line</key>
+				<integer>55</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>10</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>55</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>56</integer>
+			</dict>
 		</dict>
 		<key>src/serial_disp.c</key>
 		<dict>
@@ -111,66 +165,38 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
-		<key>src/usb_defines.h</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>41</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>56</integer>
-		</dict>
-		<key>src/usb_host.c</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>157</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>86</integer>
-		</dict>
-		<key>src/usb_host.h</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>74</integer>
-				<key>line</key>
-				<integer>12</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
-		</dict>
 	</dict>
 	<key>openDocuments</key>
 	<array>
-		<string>src/usb_host.c</string>
-		<string>src/usb_host.h</string>
-		<string>src/main.c</string>
-		<string>src/common.h</string>
-		<string>src/serial_disp.c</string>
-		<string>src/serial_disp.h</string>
-		<string>src/usb_defines.h</string>
+		<string>src/garmin_transmogrifier.c</string>
+		<string>src/garminusb2nmea.c</string>
+		<string>src/nmeagen.c</string>
+		<string>src/nmeagen.h</string>
+		<string>src/garmin.h</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<false/>
 	<key>showFileHierarchyPanel</key>
 	<true/>
 	<key>treeState</key>
-	<dict/>
+	<dict>
+		<key>src</key>
+		<dict>
+			<key>isExpanded</key>
+			<true/>
+			<key>subItems</key>
+			<dict>
+				<key>atmel-usb-lib</key>
+				<dict>
+					<key>isExpanded</key>
+					<true/>
+					<key>subItems</key>
+					<dict/>
+				</dict>
+			</dict>
+		</dict>
+	</dict>
 	<key>windowFrame</key>
-	<string>{{131, 0}, {1258, 878}}</string>
+	<string>{{182, 31}, {1258, 847}}</string>
 </dict>
 </plist>
