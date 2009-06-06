@@ -1,3 +1,6 @@
 obj
-garmin-transmogrifier.*
+garmin-transmogrifier.elf
+garmin-transmogrifier.hex
+garmin-transmogrifier.map
 doc/*.pdf
+doc/*.numbers
