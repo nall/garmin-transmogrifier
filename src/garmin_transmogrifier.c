@@ -307,6 +307,7 @@ void garmin_interrupt_recv(const U8 status, const U16 nbytes)
 void garmin_transmogrifier_task_init(void)
 {
     serial_init(umAsync, 9600, csSize8, pNoParity, sbOneStopBit);
+    serial_clear();
 }
 
 void garmin_transmogrifier_task(void)

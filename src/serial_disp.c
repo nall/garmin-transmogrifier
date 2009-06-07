@@ -3,6 +3,8 @@
 #include <avr/io.h>
 #include <string.h>
 
+const uint8_t CMD_CHAR = 254;
+
 int serial_init(const enum UARTMode mode, const uint32_t baud, const enum CharSize bits,
             const enum Parity parity, const enum StopBits stopbits)
 {
@@ -12,13 +14,15 @@ int serial_init(const enum UARTMode mode, const uint32_t baud, const enum CharSi
              (stopbits << USBS1) |
              (bits << UCSZ10);
     
-    const uint16_t scaled_baud = (F_CPU / (16 * baud)) - 1;
-    UBRR1H = scaled_baud >> 8;
-    UBRR1L = scaled_baud;
-
+    const uint32_t scaled_baud = (F_CPU / (16L * baud)) - 1L;
+    UBRR1H = (scaled_baud >> 8) & 0xFF;
+    UBRR1L = scaled_baud & 0xFF;
 
     // Enable transmit only
     UCSR1B = _BV(TXEN1);
+
+    // Don't use 2x
+    UCSR1A &= ~_BV(U2X1);
 
     return EXIT_SUCCESS;
 }
@@ -45,7 +49,12 @@ int serial_display(char* string)
 
 int serial_clear()
 {
-    serial_send_char(0x01);
+    serial_send_char(CMD_CHAR);
+    serial_send_char(0x1);
+    serial_send_char(CMD_CHAR);
+    serial_send_char(0xD);
+    serial_send_char(CMD_CHAR);
+    serial_send_char(0x80);
     
     return EXIT_SUCCESS;
 }

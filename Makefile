@@ -12,7 +12,7 @@ MAKECFG   = config.mk
 # Options common to compile, link and assembly rules
 COMMON = -mmcu=$(MCU)
 
-F_CPU = 80000000
+F_CPU = 8000000L
 
 # Compile options common for all C compilation units.
 CFLAGS = $(COMMON)
@@ -103,4 +103,7 @@ $(TARGET): $(OBJECTS)
 
 size: ${TARGET}
 	@avr-size -C --mcu=${MCU} ${TARGET}
+
+flash: $(PROJECT).hex
+	@avrdude -B 1 -P usb -c usbtiny -p $(MCU) -U flash:w:$(PROJECT).hex:i
 
