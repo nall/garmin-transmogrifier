@@ -16,12 +16,9 @@ int main(void)
     {
         lcd_clear();
     }
-    else
-    {
-        printf("MCU:%d\n", reset_status);
-        while(1){}
-    }
+#if (DEBUG == 1)
     printf("MCU:%d\n", reset_status);
+#endif // DEBUG
 
     MCUSR = 0;
     wdtdrv_disable();

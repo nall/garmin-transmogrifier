@@ -41,8 +41,6 @@
 #include "nmeagen.h"
 #include "serial_disp.h"
 
-#define DEBUG 1
-
 static const uint8_t GT_PIPE_IN_INT = 0;
 static const uint8_t GT_PIPE_OUT_BULK = 1;
 static const uint8_t GT_PIPE_IN_BULK = 2;
@@ -125,7 +123,7 @@ int initialize_pipes()
 
     Host_select_device(device);
 
-#ifdef DEBUG
+#if (DEBUG==1)
     printf("VID: 0x%04x PID: 0x%04x\n", Get_VID(), Get_PID());
 #endif // DEBUG
 
@@ -226,8 +224,7 @@ void garmin_start_session()
         garmin_recvpkt();        
     } while(gblpkt->mPacketId != Pid_Session_Started);
     
-#ifdef DEBUG
-    
+#if (DEBUG==1)
     // Protocol is little endian and gcc-avr is too, so we can just cast this.
     uint32_t unitID = *((uint32_t*)(&(gblpkt->mData)));
     printf("UnitID: 0x%lx\n", unitID);
@@ -242,7 +239,7 @@ bool garmin_check_protocol_support(const uint8_t tag, const uint16_t value)
     // Product_Data_Type
     {
         garmin_recvpkt();
-        #ifdef DEBUG
+        #if (DEBUG==1)
         if(gblpkt->mPacketId != Pid_Product_Data)
         {
             show_error("Non-Product Data Type");
@@ -388,7 +385,7 @@ void garmin_transmogrifier_task(void)
                     }
                     default:
                     {
-#ifdef DEBUG
+#if (DEBUG==1)
                         printf("recvPkt(%d)\n", gblpkt->mPacketId);
 #endif // DEBUG
                     }
