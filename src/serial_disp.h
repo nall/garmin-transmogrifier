@@ -1,6 +1,7 @@
 #ifndef __SERIAL_DISP_H__
 #define __SERIAL_DISP_H__
 
+#include <stdio.h>
 #include <inttypes.h>
 
 enum UARTMode
@@ -37,11 +38,9 @@ enum CharSize
     csSize9 = 7
 };
 
-int serial_init(const enum UARTMode mode, const uint32_t baud, const enum CharSize bits,
+int uart_init(const enum UARTMode mode, const uint32_t baud, const enum CharSize bits,
     const enum Parity parity, const enum StopBits stopbits);
     
-int serial_display(char* string);
-
-int serial_clear(); 
+void lcd_clear(); 
 
 #endif // __SERIAL_DISP_H__

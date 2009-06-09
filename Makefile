@@ -27,9 +27,9 @@ ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2
 
 # Linker flags
 LDFLAGS = $(COMMON)
-LDFLAGS += -Wl,-Map=$(PROJECT).map,--cref,--gc-sections,--relax 
+LDFLAGS += -Wl,-Map=$(PROJECT).map,--cref,--gc-sections,--relax,-u,vfprintf
 
-LIBS = -lm
+LIBS = -lprintf_flt -lm
 
 # Intel Hex file production flags
 HEX_FLASH_FLAGS = -R .eeprom

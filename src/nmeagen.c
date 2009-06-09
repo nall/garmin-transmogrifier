@@ -53,14 +53,78 @@
 #define NMEA_LATLON_SIZE    16
 #define NMEA_UTC_SIZE       16
 
-double g_lastcourse = -1;
+float g_lastcourse = -1;
+
+static float convert_to_float32(const uint64_t src)
+{
+    float value = 0;
+    
+    const uint8_t s  = (src & 0x8000000000000000LL) >> 63;
+    const uint16_t e = (src & 0x7FE0000000000000LL) >> 52;
+          uint64_t f = (src & 0x001FFFFFFFFFFFFFLL) >> 0;
+
+    // NaN - not a number
+    if(e == 0x7FF && f != 0)
+    {
+        value = NAN;
+    }
+    
+    // Negative Infinity
+    else if(e == 0x7FF && f == 0 && s == 1)
+    {
+        value = -INFINITY;
+    }
+    
+    // Positive Infinity
+    else if(e == 0x7FF && f == 0 && s == 0)
+    {
+        value = INFINITY;
+    }
+    
+    // Normal number
+    else if(e > 0 && e < 0x7FF)
+    {
+        f += 0x0010000000000000;
+        value = ldexp((float)f, e - 1023 - 52);
+        if(s)
+        {
+            value = -value;
+        }
+    }
+    
+    // De-normal number
+    else if(e == 0 && f != 0)
+    {
+        value = ldexp((float)f, -1022 - 52);
+        if(s)
+        {
+            value = -value;
+        }
+    }
+    
+    // Negative Zero
+    else if(e == 0 && f == 0 && s == 1)
+    {
+        value = 0;
+    }
+    
+    // Positive zero
+    else if(e == 0 && f == 0 && s == 0)
+    {
+        value = 0;
+    }
+    
+    return value;
+}
 
 void nmea_getutc(D800_Pvt_Data_Type *pvt, char *utctime, char *utcdate) {
-    double  tmp;
+    float  tmp;
     int     daysdiff;
 
+    float tow = convert_to_float32(pvt->tow);
+
     /* UTC time of position fix */
-    tmp = pvt->tow - pvt->leap_scnds;
+    tmp = tow - pvt->leap_scnds;
     if (tmp < 0.0)
         tmp += 86400.0;
     daysdiff = 0;
@@ -106,19 +170,19 @@ void nmea_getutc(D800_Pvt_Data_Type *pvt, char *utctime, char *utcdate) {
     }
 }
 
-void nmea_fmtlat(double lat, char *latstr) {
-    double  latdeg, tmp;
+void nmea_fmtlat(float lat, char *latstr) {
+    float  latdeg, tmp;
     latdeg = rad2deg(fabs(lat));
     tmp = floor(latdeg);
-    sprintf(latstr, "%02d%07.4f,%c", (int)tmp, (latdeg - tmp) * 60,
+    sprintf(latstr, "%02d%07.4f,%c", (int)tmp, (double)((latdeg - tmp) * 60),
         (lat >= 0) ? 'N' : 'S');
 }
 
-void nmea_fmtlon(double lon, char *lonstr) {
-    double  londeg, tmp;
+void nmea_fmtlon(float lon, char *lonstr) {
+    float  londeg, tmp;
     londeg = rad2deg(fabs(lon));
     tmp = floor(londeg);
-    sprintf(lonstr, "%03d%07.4f,%c", (int)tmp, (londeg - tmp) * 60,
+    sprintf(lonstr, "%03d%07.4f,%c", (int)tmp, (double)((londeg - tmp) * 60),
         (lon >= 0) ? 'E' : 'W');
 }
 
@@ -136,16 +200,16 @@ int nmea_gprmc(D800_Pvt_Data_Type *pvt, char *nmeastc) {
     char    buf[NMEA_BUF_SIZE];
     char    slat[NMEA_LATLON_SIZE], slon[NMEA_LATLON_SIZE];
     char    utctime[NMEA_UTC_SIZE], utcdate[NMEA_UTC_SIZE];
-    double  speed, course;
+    float  speed, course;
     unsigned char   cksum;
 
     nmea_getutc(pvt, utctime, utcdate);
 
     /* latitude */
-    nmea_fmtlat(pvt->lat, slat);
+    nmea_fmtlat(convert_to_float32(pvt->lat), slat);
 
     /* longitude */
-    nmea_fmtlon(pvt->lon, slon);
+    nmea_fmtlon(convert_to_float32(pvt->lon), slon);
     
     /* speed over ground */
     speed = sqrt(pvt->east*pvt->east + pvt->north*pvt->north) * 3.6 / KNOTS_TO_KMH;
@@ -166,7 +230,7 @@ int nmea_gprmc(D800_Pvt_Data_Type *pvt, char *nmeastc) {
 
     sprintf(buf, "GPRMC,%s,%c,%s,%s,%05.1f,%05.1f,%s,,", utctime,
         (pvt->fix >= 2 && pvt->fix <= 5) ? 'A' : 'V',
-        slat, slon, speed, course, utcdate);
+        slat, slon, (double)speed, (double)course, utcdate);
 
     cksum = nmea_cksum(buf);
 
@@ -189,10 +253,10 @@ int nmea_gpgll(D800_Pvt_Data_Type *pvt, char *nmeastc) {
     nmea_getutc(pvt, utctime, NULL);
 
     /* latitude */
-    nmea_fmtlat(pvt->lat, slat);
+    nmea_fmtlat(convert_to_float32(pvt->lat), slat);
 
     /* longitude */
-    nmea_fmtlon(pvt->lon, slon);
+    nmea_fmtlon(convert_to_float32(pvt->lon), slon);
 
     sprintf(buf, "GPGLL,%s,%s,%s,%c", slat, slon, utctime,
         (pvt->fix >= 2 && pvt->fix <= 5) ? 'A' : 'V');

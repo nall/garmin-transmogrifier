@@ -51,8 +51,8 @@
 #define rad2deg(x)      ((x) * 180.0 / G_PI)
 
 void nmea_getutc(D800_Pvt_Data_Type *pvt, char *utctime, char *utcdate);
-void nmea_fmtlat(double lat, char *latstr);
-void nmea_fmtlon(double lon, char *lonstr);
+void nmea_fmtlat(float lat, char *latstr);
+void nmea_fmtlon(float lon, char *lonstr);
 int nmea_gprmc(D800_Pvt_Data_Type *pvt, char *nmeastc);
 int nmea_gpgll(D800_Pvt_Data_Type *pvt, char *nmeastc);
 unsigned char nmea_cksum(char *str);

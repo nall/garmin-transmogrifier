@@ -2,9 +2,23 @@
 #include "modules/common/scheduler/scheduler.h"
 #include "lib_mcu/wdt/wdt_drv.h"
 #include "lib_mcu/power/power_drv.h"
+#include <util/delay.h>
+
+#include <avr/interrupt.h>
+#include "serial_disp.h"
 
 int main(void)
 {
+    const uint16_t reset_status = MCUSR;
+
+    uart_init(umAsync, 9600, csSize8, pNoParity, sbOneStopBit);
+    if(Is_POR_reset() || Is_ext_reset())
+    {
+        lcd_clear();
+    }
+    printf("MCU:%d\n", reset_status);
+
+    MCUSR = 0;
     wdtdrv_disable();
     Clear_prescaler();
     scheduler();

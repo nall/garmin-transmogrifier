@@ -41,6 +41,8 @@
 #include "nmeagen.h"
 #include "serial_disp.h"
 
+#define DEBUG 1
+
 static const uint8_t GT_PIPE_IN_INT = 0;
 static const uint8_t GT_PIPE_OUT_BULK = 1;
 static const uint8_t GT_PIPE_IN_BULK = 2;
@@ -51,11 +53,13 @@ static uint8_t pipes[3];
 static uint8_t pktbuf[GARMIN_MAX_PKTSIZE];
 static Packet_t* gblpkt = (Packet_t*)pktbuf;
 
+static uint16_t _garmin_recvpkt(const bool require_data);
+
 static void show_error(char* const msg)
 {
-    serial_clear();
-    serial_display("ERROR: ");
-    serial_display(msg);
+    lcd_clear();
+    printf("ERROR: %s\n", msg);
+    while(1) {}
 }
 
 static void sanity_check_ep_type(const uint8_t device, const uint8_t interface,
@@ -100,7 +104,7 @@ static void sanity_check_ep_type(const uint8_t device, const uint8_t interface,
     }
 }
 
-static void intialize_pipes()
+int initialize_pipes()
 {
     const uint8_t device = 0;
     const uint8_t interface = 0;
@@ -122,13 +126,7 @@ static void intialize_pipes()
     Host_select_device(device);
 
 #ifdef DEBUG
-    {
-        const uint16_t vid = Get_VID();
-        const uint16_t pid = Get_PID();
-        char buf[128];
-        sprintf(buf, "VID: 0x%04x PID: 0x%04x", vid, pid);
-        serial_display(buf);
-    }
+    printf("VID: 0x%04x PID: 0x%04x\n", Get_VID(), Get_PID());
 #endif // DEBUG
 
     // Connect up the endpoints. We should have three:
@@ -151,6 +149,8 @@ static void intialize_pipes()
 
         sanity_check_ep_type(device, interface, ep, addrs[ep]);
     }
+
+    return 1;
 }
 
 static void init_packet(const uint8_t type, const uint8_t id)
@@ -160,40 +160,49 @@ static void init_packet(const uint8_t type, const uint8_t id)
     gblpkt->mPacketId = id; 
 }
 
-void garmin_recvpkt()
+uint16_t garmin_recvpkt()
 {
-    
+    return _garmin_recvpkt(TRUE);
+}
+
+static uint16_t _garmin_recvpkt(const bool require_data)
+{
     // Zero-out the packet structure
     init_packet(0, 0);
     
-    U16 nbytes = GARMIN_HEADER_SIZE;
+    U16 nbytes = GARMIN_MAX_PKTSIZE;
     uint8_t status = host_get_data(pipes[cur_in_pipe], &nbytes, (U8*)gblpkt);
-    if(nbytes != GARMIN_HEADER_SIZE || status != 0)
+
+    // Were reading the bulk pipe and are now done?
+    if(nbytes == 0 && cur_in_pipe == GT_PIPE_IN_BULK)
     {
-        if(cur_in_pipe == GT_PIPE_IN_BULK)
+        cur_in_pipe = GT_PIPE_IN_INT;
+    }
+
+    if(nbytes == 0 && require_data == FALSE)
+    {
+        return 0;
+    }
+
+    if(nbytes < GARMIN_HEADER_SIZE || status != 0)
+    {
+        show_error("host_get_data couldn't return GARMIN_HEADER_SIZE bytes");            
+    }
+    
+    uint8_t totalbytes = nbytes;
+    while(gblpkt->mDataSize > 0 && totalbytes < (GARMIN_HEADER_SIZE + gblpkt->mDataSize))
+    {
+        nbytes = GARMIN_MAX_PKTSIZE;
+        status = host_get_data(pipes[cur_in_pipe], &nbytes, (U8*)(&(gblpkt->mData)));        
+        totalbytes += nbytes;
+
+        if(nbytes == 0 && cur_in_pipe == GT_PIPE_IN_BULK)
         {
             cur_in_pipe = GT_PIPE_IN_INT;
         }
-        else
-        {
-            show_error("host_get_data couldn't return GARMIN_HEADER_SIZE bytes");            
-        }
     }
     
-    if(gblpkt->mDataSize > 0)
-    {
-        nbytes = gblpkt->mDataSize;
-        status = host_get_data(pipes[cur_in_pipe], &nbytes, (U8*)(&(gblpkt->mData)));        
-        if(nbytes != gblpkt->mDataSize || status != 0)
-        {
-            show_error("host_get_data couldn't return mDataSize bytes");
-        }
-    }
-    
-    if(gblpkt->mPacketId == Pid_Data_Available)
-    {
-        cur_in_pipe = GT_PIPE_IN_BULK;
-    }
+    return nbytes;
 }
 
 void garmin_sendpkt()
@@ -213,18 +222,15 @@ void garmin_start_session()
 
     do
     {
-        // Ingore all packets until we get this, per the Garmin Spec 3.2.3.3
+        // Ignore all packets until we get this, per the Garmin Spec 3.2.3.3
         garmin_recvpkt();        
     } while(gblpkt->mPacketId != Pid_Session_Started);
     
 #ifdef DEBUG
-    char buf[512];
     
     // Protocol is little endian and gcc-avr is too, so we can just cast this.
     uint32_t unitID = *((uint32_t*)(&(gblpkt->mData)));
-    
-    sprintf(buf, "UnitID: 0x%lx", unitID);
-    serial_display(buf);
+    printf("UnitID: 0x%lx\n", unitID);
 #endif // DEBUG
 }
 
@@ -265,6 +271,8 @@ bool garmin_check_protocol_support(const uint8_t tag, const uint16_t value)
                 // We found a match!
                 return TRUE;
             }
+
+            ++cur_type;
         }
     }    
     else
@@ -277,6 +285,7 @@ bool garmin_check_protocol_support(const uint8_t tag, const uint16_t value)
 
 void garmin_interrupt_recv(const U8 status, const U16 nbytes)
 {
+    printf("grmn_intr\n");
     if(status == PIPE_GOOD)
     {
         if(nbytes == (GARMIN_HEADER_SIZE + sizeof(D800_Pvt_Data_Type)))
@@ -285,7 +294,7 @@ void garmin_interrupt_recv(const U8 status, const U16 nbytes)
             D800_Pvt_Data_Type* pvt = (D800_Pvt_Data_Type*)(&(gblpkt->mData));
             char nmeabuf[512];
             nmea_gprmc(pvt, nmeabuf);
-            serial_display(nmeabuf);
+            printf("BUF: %s\n", nmeabuf);
             
             // Get the next one
             init_packet(0, 0);
@@ -295,7 +304,9 @@ void garmin_interrupt_recv(const U8 status, const U16 nbytes)
         }
         else
         {
-            show_error("Bad data size in int_recv");
+            printf("rcv %d\n", nbytes);
+            while(1){}
+            show_error("Bad data size in int_recv\n");
         }
     }
     else
@@ -306,10 +317,9 @@ void garmin_interrupt_recv(const U8 status, const U16 nbytes)
 
 void garmin_transmogrifier_task_init(void)
 {
-    serial_init(umAsync, 9600, csSize8, pNoParity, sbOneStopBit);
-    serial_clear();
 }
 
+extern U8 device_state;
 void garmin_transmogrifier_task(void)
 {
     // Is_host_ready will be true if the host is intialized AND a device has
@@ -320,7 +330,21 @@ void garmin_transmogrifier_task(void)
         if(Is_new_device_connection_event())
         {
             // setup the pipes array
-            intialize_pipes();
+            initialize_pipes();
+
+            {
+                uint32_t private_mode[4];
+                private_mode[0] = 0x01106E4B;
+                private_mode[1] = 2;
+                private_mode[2] = 4;
+                private_mode[3] = 0;
+                const uint8_t status = host_send_data(pipes[GT_PIPE_OUT_BULK], 16, (U8*)private_mode);
+                if(status != 0)
+                {
+                    show_error("Can't send private data");
+                }
+            }
+
             garmin_start_session();
             bool supported = garmin_check_protocol_support(Tag_Appl_Prot_Id, 800);
             supported &= garmin_check_protocol_support(Tag_Data_Type_Id, 800);
@@ -331,19 +355,44 @@ void garmin_transmogrifier_task(void)
             }
             else
             {
+                printf("Enable PVT\n");
                 // Initiate PVT transfers from the device
                 init_packet(Prot_Application, Pid_Command_Data);
                 gblpkt->mDataSize = 2;
                 gblpkt->mData[0] = Cmnd_Start_Pvt_Data;
                 gblpkt->mData[1] = 0;
                 garmin_sendpkt();
-                
-                // From here on out, just keep receiving via interrupt to
-                // avoid timing out
-                init_packet(0, 0);
-                host_get_data_interrupt(pipes[cur_in_pipe],
-                    GARMIN_HEADER_SIZE + sizeof(D800_Pvt_Data_Type),
-                    pktbuf, garmin_interrupt_recv);
+            }
+        }
+
+        // Constantly check interrupt pipe
+        {
+            uint16_t bytes = _garmin_recvpkt(FALSE);
+            if(bytes > 0)
+            {
+                switch(gblpkt->mPacketId)
+                {
+                    case Pid_Pvt_Data:
+                    {
+                        // Got a good packet
+                        D800_Pvt_Data_Type* pvt = (D800_Pvt_Data_Type*)(&(gblpkt->mData));
+                        char nmeabuf[512];
+                        nmea_gprmc(pvt, nmeabuf);
+                        printf("BUF: %s\n", nmeabuf);
+                        break;
+                    }
+                    case Pid_Data_Available:
+                    {
+                        cur_in_pipe = GT_PIPE_IN_BULK;
+                        break;
+                    }
+                    default:
+                    {
+#ifdef DEBUG
+                        printf("recvPkt(%d)\n", gblpkt->mPacketId);
+#endif // DEBUG
+                    }
+                }
             }
         }
     }
