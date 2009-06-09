@@ -177,8 +177,8 @@ U8  nb_interface_supported;
    nb_interface_supported=0;   //First asumes ,no interface is supported!
    if (data_stage[OFFSET_FIELD_DESCRIPTOR_TYPE] != DESCRIPTOR_CONFIGURATION)           // check if configuration descriptor
    { return HOST_FALSE;}
-   LSB(config_size) = data_stage[OFFSET_FIELD_TOTAL_LENGHT];
-   MSB(config_size) = data_stage[OFFSET_FIELD_TOTAL_LENGHT+1];
+   LSB(config_size) = data_stage[OFFSET_FIELD_TOTAL_LENGTH];
+   MSB(config_size) = data_stage[OFFSET_FIELD_TOTAL_LENGTH+1];
    usb_tree.device[selected_device].bmattributes = data_stage[OFFSET_FIELD_BMATTRIBUTES];
    usb_tree.device[selected_device].maxpower = data_stage[OFFSET_FIELD_MAXPOWER];
    descriptor_offset = 0;
@@ -306,7 +306,7 @@ U8 nb_interface;
       // Get the number of endpoint to configure for this interface
       nb_endpoint_to_configure = usb_tree.device[device].interface[i].nb_ep;
       // Get the first Endpoint descriptor offset to configure
-      descriptor_offset += data_stage[descriptor_offset+OFFSET_DESCRIPTOR_LENGHT];  // pointing on endpoint descriptor
+      descriptor_offset += data_stage[descriptor_offset+OFFSET_DESCRIPTOR_LENGTH];  // pointing on endpoint descriptor
 
       // While there is at least one pipe to configure
       while (nb_endpoint_to_configure)
@@ -465,7 +465,7 @@ T_DESC_OFFSET get_interface_descriptor_offset(U8 interface, U8 alt)
    T_DESC_OFFSET descriptor_offset;
 
    nb_interface = data_stage[OFFSET_FIELD_NB_INTERFACE];      // Detects the number of interfaces in this configuration
-   descriptor_offset = data_stage[OFFSET_DESCRIPTOR_LENGHT];  // now pointing on next descriptor
+   descriptor_offset = data_stage[OFFSET_DESCRIPTOR_LENGTH];  // now pointing on next descriptor
 
    while(descriptor_offset < SIZEOF_DATA_STAGE)            // Look in all interfaces declared in the configuration
    {

@@ -160,7 +160,7 @@ extern  U8 device_status;
 #define OFFSET_FIELD_MSB_PID           11
 #define OFFSET_FIELD_LSB_PID           10
 
-#define OFFSET_DESCRIPTOR_LENGHT       0
+#define OFFSET_DESCRIPTOR_LENGTH       0
 #define OFFSET_FIELD_DESCRIPTOR_TYPE   1
 #define OFFSET_FIELD_TOTAL_LENGTH      2
 #define OFFSET_FIELD_BMATTRIBUTES      7
