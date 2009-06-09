@@ -56,7 +56,7 @@
 
 #define  Is_ext_reset()                ((MCUSR&(1<<EXTRF)) ? TRUE:FALSE)
 #define  Ack_ext_reset()               (MCUSR= ~(1<<EXTRF))
-#define  Is_POR_reset()                ((MCUSR&(1<<(MCUSR= ~(1<<PORF)))) ? TRUE:FALSE)
+#define  Is_POR_reset()                ((MCUSR&(1<<PORF)) ? TRUE:FALSE)
 #define  Ack_POR_reset()               (MCUSR= ~(1<<PORF))
 #define  Is_BOD_reset()                ((MCUSR&(1<<BORF)) ? TRUE:FALSE)
 #define  Ack_BOD_reset()               (MCUSR= ~(1<<BORF))

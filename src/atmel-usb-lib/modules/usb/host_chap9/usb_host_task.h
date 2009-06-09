@@ -97,7 +97,7 @@ typedef struct
    #define Is_host_unattached()   ((device_state==DEVICE_UNATTACHED)   ? TRUE : FALSE)
 
    //! Check if there is an attached device connected to the host
-   #define Is_host_attached()     ((device_state>=DEVICE_UNATTACHED)   ? TRUE : FALSE)
+   #define Is_host_attached()     ((device_state>=DEVICE_ATTACHED)   ? TRUE : FALSE)
 
    //! This function should be called to make the host controller enter USB suspend mode
    #define Host_request_suspend()     (device_state=DEVICE_SUSPENDED)
