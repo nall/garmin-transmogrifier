@@ -114,7 +114,8 @@
    #define CLASS_SUBCLASS_PROTOCOL     {0xFF, 0xFF, 0xFF}
 
    //! The size of RAM buffer reserved of descriptors manipulation
-   #define SIZEOF_DATA_STAGE        250
+   // Nall: Changed from 250 as that caused rebooting in host_auto_configure_endpoint
+   #define SIZEOF_DATA_STAGE        512
 
    //! The address that will be assigned to the connected device
    #define DEVICE_BASE_ADDRESS      0x05
@@ -196,7 +197,9 @@
    #define Host_device_not_supported_action()
    #define Host_device_class_not_supported_action()
    #define Host_device_supported_action()
-   #define Host_device_error_action()
+   
+ extern void garmin_host_usb_error();
+   #define Host_device_error_action() garmin_host_usb_error()
    //! @}
 
 

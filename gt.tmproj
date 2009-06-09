@@ -146,6 +146,8 @@
 		<string>src/garmin.h</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
+	<false/>
+	<key>showFileHierarchyPanel</key>
 	<true/>
 	<key>treeState</key>
 	<dict>
@@ -158,6 +160,6 @@
 		</dict>
 	</dict>
 	<key>windowFrame</key>
-	<string>{{518, 14}, {1227, 847}}</string>
+	<string>{{-1227, 753}, {1227, 847}}</string>
 </dict>
 </plist>

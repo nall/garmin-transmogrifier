@@ -532,6 +532,11 @@ void usb_host_task(void)
                   else// Problem during Set_configuration request...
                   {   device_state = DEVICE_ERROR;  }
                }
+               else
+               {
+                   // unable to configure endpoint
+                   device_state = DEVICE_ERROR;
+               }
             }
             else // device class not supported...
             {
@@ -608,7 +613,7 @@ void usb_host_task(void)
      //   - Do custom action call (probably go to default mode...)
      //
       case DEVICE_ERROR :    // TODO !!!!
-      #if (HOST_ERROR_RESTART==ENABLE)
+      #if (HOST_ERROR_RESTART==ENABLE && DEBUG!=1)
          device_state=DEVICE_UNATTACHED;
       #endif
          Host_device_error_action();

@@ -402,3 +402,8 @@ void garmin_transmogrifier_task(void)
         // FIXME: What action do we take? Any?
     }
 }
+
+void garmin_host_usb_error()
+{
+    show_error("GRMN-USB-ERR\n");
+}

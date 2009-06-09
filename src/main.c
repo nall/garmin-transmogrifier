@@ -16,6 +16,11 @@ int main(void)
     {
         lcd_clear();
     }
+    else
+    {
+        printf("MCU:%d\n", reset_status);
+        while(1){}
+    }
     printf("MCU:%d\n", reset_status);
 
     MCUSR = 0;
