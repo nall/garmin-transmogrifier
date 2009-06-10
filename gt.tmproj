@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>src/nmeagen.c</string>
+	<string>src/atmel-usb-lib/modules/usb/host_chap9/usb_host_enum.c</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -21,6 +21,108 @@
 	<integer>200</integer>
 	<key>metaData</key>
 	<dict>
+		<key>src/atmel-usb-lib/conf/conf_usb.h</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>37</integer>
+				<key>line</key>
+				<integer>200</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>152</integer>
+		</dict>
+		<key>src/atmel-usb-lib/modules/usb/host_chap9/usb_host_enum.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>18</integer>
+				<key>line</key>
+				<integer>789</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>828</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>5</integer>
+				<key>line</key>
+				<integer>789</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>18</integer>
+				<key>line</key>
+				<integer>789</integer>
+			</dict>
+		</dict>
+		<key>src/atmel-usb-lib/modules/usb/host_chap9/usb_host_task.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>9</integer>
+				<key>line</key>
+				<integer>206</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>188</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>3</integer>
+				<key>line</key>
+				<integer>206</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>16</integer>
+				<key>line</key>
+				<integer>206</integer>
+			</dict>
+		</dict>
+		<key>src/atmel-usb-lib/modules/usb/usb_task.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>18</integer>
+				<key>line</key>
+				<integer>176</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>198</integer>
+		</dict>
+		<key>src/atmel-usb-lib/modules/usb/usb_task.h</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
 		<key>src/common.h</key>
 		<dict>
 			<key>caret</key>
@@ -72,12 +174,12 @@
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>297</integer>
+				<integer>409</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>274</integer>
+			<integer>359</integer>
 		</dict>
 		<key>src/garminusb2nmea.c</key>
 		<dict>
@@ -93,19 +195,33 @@
 			<key>firstVisibleLine</key>
 			<integer>121</integer>
 		</dict>
+		<key>src/main.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>21</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
 		<key>src/nmeagen.c</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>19</integer>
+				<integer>0</integer>
 				<key>line</key>
 				<integer>59</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>111</integer>
+			<integer>105</integer>
 		</dict>
 		<key>src/nmeagen.h</key>
 		<dict>
@@ -142,6 +258,12 @@
 		<string>src/serial_disp.h</string>
 		<string>src/garminusb2nmea.c</string>
 		<string>src/nmeagen.c</string>
+		<string>src/atmel-usb-lib/modules/usb/usb_task.c</string>
+		<string>src/atmel-usb-lib/modules/usb/host_chap9/usb_host_task.c</string>
+		<string>src/atmel-usb-lib/modules/usb/host_chap9/usb_host_enum.c</string>
+		<string>src/atmel-usb-lib/conf/conf_usb.h</string>
+		<string>src/atmel-usb-lib/modules/usb/usb_task.h</string>
+		<string>src/main.c</string>
 		<string>src/nmeagen.h</string>
 		<string>src/garmin.h</string>
 	</array>
@@ -156,10 +278,49 @@
 			<key>isExpanded</key>
 			<true/>
 			<key>subItems</key>
-			<dict/>
+			<dict>
+				<key>atmel-usb-lib</key>
+				<dict>
+					<key>isExpanded</key>
+					<true/>
+					<key>subItems</key>
+					<dict>
+						<key>conf</key>
+						<dict>
+							<key>isExpanded</key>
+							<true/>
+							<key>subItems</key>
+							<dict/>
+						</dict>
+						<key>modules</key>
+						<dict>
+							<key>isExpanded</key>
+							<true/>
+							<key>subItems</key>
+							<dict>
+								<key>usb</key>
+								<dict>
+									<key>isExpanded</key>
+									<true/>
+									<key>subItems</key>
+									<dict>
+										<key>host_chap9</key>
+										<dict>
+											<key>isExpanded</key>
+											<true/>
+											<key>subItems</key>
+											<dict/>
+										</dict>
+									</dict>
+								</dict>
+							</dict>
+						</dict>
+					</dict>
+				</dict>
+			</dict>
 		</dict>
 	</dict>
 	<key>windowFrame</key>
-	<string>{{-1227, 753}, {1227, 847}}</string>
+	<string>{{689, 587}, {1227, 847}}</string>
 </dict>
 </plist>
