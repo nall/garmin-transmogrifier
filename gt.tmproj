@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>src/atmel-usb-lib/modules/usb/host_chap9/usb_host_enum.c</string>
+	<string>src/atmel-usb-lib/modules/usb/host_chap9/usb_host_task.c</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -34,36 +34,6 @@
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>152</integer>
-		</dict>
-		<key>src/atmel-usb-lib/modules/usb/host_chap9/usb_host_enum.c</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>18</integer>
-				<key>line</key>
-				<integer>789</integer>
-			</dict>
-			<key>columnSelection</key>
-			<false/>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>828</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>5</integer>
-				<key>line</key>
-				<integer>789</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>18</integer>
-				<key>line</key>
-				<integer>789</integer>
-			</dict>
 		</dict>
 		<key>src/atmel-usb-lib/modules/usb/host_chap9/usb_host_task.c</key>
 		<dict>
@@ -260,7 +230,6 @@
 		<string>src/nmeagen.c</string>
 		<string>src/atmel-usb-lib/modules/usb/usb_task.c</string>
 		<string>src/atmel-usb-lib/modules/usb/host_chap9/usb_host_task.c</string>
-		<string>src/atmel-usb-lib/modules/usb/host_chap9/usb_host_enum.c</string>
 		<string>src/atmel-usb-lib/conf/conf_usb.h</string>
 		<string>src/atmel-usb-lib/modules/usb/usb_task.h</string>
 		<string>src/main.c</string>
@@ -321,6 +290,6 @@
 		</dict>
 	</dict>
 	<key>windowFrame</key>
-	<string>{{689, 587}, {1227, 847}}</string>
+	<string>{{213, 31}, {1227, 847}}</string>
 </dict>
 </plist>
