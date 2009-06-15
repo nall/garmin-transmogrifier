@@ -1,0 +1,12 @@
+#ifndef _GARMIN_DEVICE_H_
+#define _GARMIN_DEVICE_H_
+
+#define GRMN_DATA_IN_PIPE 1
+#define GRMN_EVENTS_PIPE 2
+#define GRMN_DATA_OUT_PIPE 3
+
+#define GRMN_CLASS 0xFF
+#define GRMN_SUBCLASS 0xFF
+#define GRMN_PROTOCOL 0xFF
+
+#endif // _GARMIN_DEVICE_H_

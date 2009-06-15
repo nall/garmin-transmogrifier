@@ -1,7 +1,9 @@
 tags
 obj
-garmin-transmogrifier.elf
-garmin-transmogrifier.hex
-garmin-transmogrifier.map
+.dep
+.*.sw?
+garmin_transmogrifier.elf
+garmin_transmogrifier.hex
+garmin_transmogrifier.map
 doc/*.pdf
 doc/*.numbers

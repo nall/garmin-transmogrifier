@@ -404,3 +404,24 @@ void garmin_host_usb_error()
 {
     show_error("GRMN-USB-ERR\n");
 }
+
+int main(void)
+{
+    const uint16_t reset_status = MCUSR;
+
+    uart_init(umAsync, 9600, csSize8, pNoParity, sbOneStopBit);
+    if(Is_POR_reset() || Is_ext_reset())
+    {
+        lcd_clear();
+    }
+#if (DEBUG == 1)
+    printf("MCU:%d\n", reset_status);
+#endif // DEBUG
+
+    MCUSR = 0;
+    wdtdrv_disable();
+    Clear_prescaler();
+    scheduler();
+    return 0;
+}
+
