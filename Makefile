@@ -103,9 +103,9 @@ LUFA_PATH = $(SRCDIR)/LUFA
 
 
 # List C source files here. (C dependencies are automatically generated.)
-#SRC = $(SRCDIR)/$(TARGET).c                                  
-SRC =                                   \
+SRC = $(SRCDIR)/$(TARGET).c                                  \
 	  $(SRCDIR)/config_descriptor.c                          \
+	  $(SRCDIR)/serial_disp.c                                \
 	  $(LUFA_PATH)/Scheduler/Scheduler.c                     \
 	  $(LUFA_PATH)/Drivers/Peripheral/SerialStream.c         \
 	  $(LUFA_PATH)/Drivers/Peripheral/Serial.c               \
@@ -146,7 +146,7 @@ OPT = s
 #     Native formats for AVR-GCC's -g are dwarf-2 [default] or stabs.
 #     AVR Studio 4.10 requires dwarf-2.
 #     AVR [Extended] COFF format requires stabs, plus an avr-objcopy run.
-DEBUG = dwarf-2
+DEBUG = dwarf-2 -DDEBUG=1
 
 
 # List any extra directories to look for include files here.
@@ -189,6 +189,7 @@ CPPDEFS = -DF_CPU=$(F_CPU)UL
 #  -Wa,...:      tell GCC to pass this to the assembler.
 #    -adhlns...: create assembler listing
 CFLAGS = -g$(DEBUG)
+CFLAGS += -std=c99
 CFLAGS += $(CDEFS)
 CFLAGS += -O$(OPT)
 CFLAGS += -funsigned-char
@@ -198,7 +199,7 @@ CFLAGS += -fpack-struct
 CFLAGS += -fshort-enums
 CFLAGS += -finline-limit=20
 CFLAGS += -Wall
-CFLAGS += -Wstrict-prototypes
+#CFLAGS += -Wstrict-prototypes
 CFLAGS += -Wundef
 #CFLAGS += -fno-unit-at-a-time
 #CFLAGS += -Wunreachable-code
@@ -688,6 +689,7 @@ clean_list:
 	$(REMOVE) $(SRC:.c=.d)
 	$(REMOVE) $(SRC:.c=.i)
 	$(REMOVEDIR) .dep
+	$(REMOVEDIR) $(OBJDIR)
 
 
 doxygen:
