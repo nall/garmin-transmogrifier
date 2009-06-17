@@ -64,7 +64,7 @@ TASK_LIST
 static void show_error(char* const msg)
 {
     lcd_clear();
-    printf("ERROR: %s\n", msg);
+    printf("ERROR: %s", msg);
     while(1) {}
 }
 
@@ -90,7 +90,7 @@ static uint16_t _garmin_recvpkt(const bool require_data)
 
     uint16_t totalbytes = 0;
 
-    if(Pipe_BytesInPipe() > 0 && require_data == FALSE)
+    if(Pipe_BytesInPipe() == 0 && require_data == FALSE)
     {
         return totalbytes;
     }
@@ -127,7 +127,11 @@ void garmin_sendpkt()
     
     const uint16_t nbytes = GARMIN_HEADER_SIZE + gblpkt->mDataSize;
     
-    Pipe_Write_Stream_LE(gblpkt, nbytes);
+    enum Pipe_Stream_RW_ErrorCodes_t rc = Pipe_Write_Stream_LE(gblpkt, nbytes);
+    if(rc != PIPE_RWSTREAM_NoError)
+    {
+        printf("StreamRWErr2(%d)", rc); while(1) {}
+    }
     
     Pipe_ClearOUT();
     Pipe_Freeze();
@@ -147,7 +151,7 @@ void garmin_start_session()
 #if (DEBUG==1)
     // Protocol is little endian and gcc-avr is too, so we can just cast this.
     uint32_t unitID = *((uint32_t*)(&(gblpkt->mData)));
-    printf("UnitID: 0x%lx\n", unitID);
+    printf("UnitID: 0x%lx", unitID);
 #endif // DEBUG
 }
 
@@ -301,7 +305,7 @@ void USB_Garmin_Host(void)
         case HOST_STATE_Configured:
         {
 #if (DEBUG == 1)
-            printf("Getting Config Data.\r\n");
+            printf("Getting Config Data.");
 #endif // DEBUG
     
             /* Get and process the configuration descriptor data */
@@ -316,7 +320,7 @@ void USB_Garmin_Host(void)
             }
 
 #if (DEBUG == 1)
-            printf("Garmin GPS Enumerated.\r\n");
+            printf("Garmin GPS Enumerated.");
 #endif // DEBUG
 
             USB_HostState = HOST_STATE_Ready;
@@ -382,14 +386,17 @@ void USB_Garmin_Host(void)
 int main(void)
 {
     const uint16_t reset_status = MCUSR;
-
+    
+    // Default to reading from interrupt pipe
+    cur_in_pipe = GRMN_EVENTS_PIPE;
+    
     uart_init(umAsync, 9600, csSize8, pNoParity, sbOneStopBit);
     if(Is_POR_Reset() || Is_EXT_Reset())
     {
         lcd_clear();
     }
 #if (DEBUG == 1)
-    printf("MCU2:%d\n", reset_status);
+    printf("MCU2:%d", reset_status);
 #endif // DEBUG
 
     MCUSR = 0;
