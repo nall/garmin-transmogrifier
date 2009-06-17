@@ -30,125 +30,42 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <avr/io.h>
+#include <avr/wdt.h>
 
-#include "config.h"
-#include "conf_usb.h"
-#include "lib_mcu/usb/usb_drv.h"
-#include "modules/usb/host_chap9/usb_host_task.h"
-#include "modules/usb/host_chap9/usb_host_enum.h"
-
+#include "config_descriptor.h"
+#include "garmin_transmogrifier.h"
 #include "garmin.h"
+#include "garmin_device.h"
 #include "nmeagen.h"
 #include "serial_disp.h"
 
-static const uint8_t GT_PIPE_IN_INT = 0;
-static const uint8_t GT_PIPE_OUT_BULK = 1;
-static const uint8_t GT_PIPE_IN_BULK = 2;
-static uint8_t cur_in_pipe = 0;
+#define Is_POR_Reset() ((MCUSR & (_BV(PORF))) ? TRUE : FALSE)
+#define Is_EXT_Reset() ((MCUSR & (_BV(EXTRF))) ? TRUE : FALSE)
+#define Is_WDT_Reset() ((MCUSR & (_BV(WDRF))) ? TRUE : FALSE)
+#define Is_BOD_Reset() ((MCUSR & (_BV(BORF))) ? TRUE : FALSE)
 
-static uint8_t pipes[3];
+static uint8_t cur_in_pipe = 0;
 
 static uint8_t pktbuf[GARMIN_MAX_PKTSIZE];
 static Packet_t* gblpkt = (Packet_t*)pktbuf;
 
+static const bool FALSE = 0;
+static const bool TRUE = 1;
+
 static uint16_t _garmin_recvpkt(const bool require_data);
+
+TASK_LIST
+{
+        { .Task = USB_USBTask    , .TaskStatus = TASK_STOP },
+        { .Task = USB_Garmin_Host, .TaskStatus = TASK_STOP },
+};
 
 static void show_error(char* const msg)
 {
     lcd_clear();
     printf("ERROR: %s\n", msg);
     while(1) {}
-}
-
-static void sanity_check_ep_type(const uint8_t device, const uint8_t interface,
-    const uint8_t ep, const uint8_t ep_addr)
-{
-    // Sanity check EP types
-    {
-        const uint8_t ep_type = usb_tree.device[device].interface[interface].ep[ep].ep_type;
-        const uint8_t is_in = Is_ep_addr_in(ep_addr);
-        switch(ep)
-        {
-            case 0:
-            {
-                if(ep_type != TYPE_INTERRUPT || !is_in)
-                {
-                    show_error("Endpoint 0 was not of type In/Interrupt");
-                }
-                break;                            
-            }
-            case 1:
-            {
-                if(ep_type != TYPE_BULK || is_in)
-                {
-                    show_error("Endpoint 1 was not of type Out/Bulk");
-                }
-                break;                            
-            }
-            case 2:
-            {
-                if(ep_type != TYPE_BULK)
-                {
-                    show_error("Endpoint 2 was not of type In/Bulk");
-                }
-                break;                            
-            }
-            default:
-            {
-                show_error("Unexpected endpoint > 2");
-                break;                            
-            }
-        }
-    }
-}
-
-int initialize_pipes()
-{
-    const uint8_t device = 0;
-    const uint8_t interface = 0;
-    cur_in_pipe = GT_PIPE_IN_INT;
-
-    if(Get_nb_device() > 1)
-    {
-        show_error("Found more than 1 Device");
-    }
-    else if(Get_nb_supported_interface() > 1)
-    {
-        show_error("Found more than 1 Interface");
-    }
-    else if(Get_nb_ep(interface) != 3)
-    {
-        show_error("Found number of endpoints != 3 on Interface 0");
-    }
-
-    Host_select_device(device);
-
-#if (DEBUG==1)
-    printf("VID: 0x%04x PID: 0x%04x\n", Get_VID(), Get_PID());
-#endif // DEBUG
-
-    // Connect up the endpoints. We should have three:
-    // 1: IN, Interrupt (64 bytes)
-    // 2: OUT, Bulk (64 bytes)
-    // 3: IN, Bulk (8 bytes)
-
-    uint8_t addrs[3];
-    for(uint8_t ep = 0; ep < Get_nb_ep(interface); ++ep)
-    {
-        addrs[ep] = Get_ep_addr(interface, ep);
-        pipes[ep] = host_get_hwd_pipe_nb(addrs[ep]);
-
-        if(ep == 0)
-        {
-            Host_select_pipe(pipes[ep]);
-            Host_continuous_in_mode();
-            Host_unfreeze_pipe();
-        }
-
-        sanity_check_ep_type(device, interface, ep, addrs[ep]);
-    }
-
-    return 1;
 }
 
 static void init_packet(const uint8_t type, const uint8_t id)
@@ -158,7 +75,7 @@ static void init_packet(const uint8_t type, const uint8_t id)
     gblpkt->mPacketId = id; 
 }
 
-uint16_t garmin_recvpkt()
+static uint16_t garmin_recvpkt()
 {
     return _garmin_recvpkt(TRUE);
 }
@@ -168,49 +85,52 @@ static uint16_t _garmin_recvpkt(const bool require_data)
     // Zero-out the packet structure
     init_packet(0, 0);
     
-    U16 nbytes = GARMIN_MAX_PKTSIZE;
-    uint8_t status = host_get_data(pipes[cur_in_pipe], &nbytes, (U8*)gblpkt);
+    Pipe_SelectPipe(cur_in_pipe);
+    Pipe_Unfreeze();
 
-    // Were reading the bulk pipe and are now done?
-    if(nbytes == 0 && cur_in_pipe == GT_PIPE_IN_BULK)
+    uint16_t totalbytes = 0;
+
+    if(Pipe_BytesInPipe() > 0 && require_data == FALSE)
     {
-        cur_in_pipe = GT_PIPE_IN_INT;
+        return totalbytes;
     }
 
-    if(nbytes == 0 && require_data == FALSE)
+    enum Pipe_Stream_RW_ErrorCodes_t rc = Pipe_Read_Stream_LE(gblpkt, GARMIN_HEADER_SIZE);
+    if(rc == PIPE_RWSTREAM_NoError)
     {
-        return 0;
-    }
-
-    if(nbytes < GARMIN_HEADER_SIZE || status != 0)
-    {
-        show_error("host_get_data couldn't return GARMIN_HEADER_SIZE bytes");            
-    }
-    
-    uint8_t totalbytes = nbytes;
-    while(gblpkt->mDataSize > 0 && totalbytes < (GARMIN_HEADER_SIZE + gblpkt->mDataSize))
-    {
-        nbytes = GARMIN_MAX_PKTSIZE;
-        status = host_get_data(pipes[cur_in_pipe], &nbytes, (U8*)(&(gblpkt->mData)));        
-        totalbytes += nbytes;
-
-        if(nbytes == 0 && cur_in_pipe == GT_PIPE_IN_BULK)
+        totalbytes += GARMIN_HEADER_SIZE;
+        rc = Pipe_Read_Stream_LE(gblpkt->mData, gblpkt->mDataSize);
+        if(rc != PIPE_RWSTREAM_NoError)
         {
-            cur_in_pipe = GT_PIPE_IN_INT;
+            printf("StreamRWErr1(%d)", rc); while(1) {}
+        }
+        else
+        {
+            totalbytes += gblpkt->mDataSize;
         }
     }
+    else
+    {
+        printf("StreamRWErr0(%d)", rc); while(1) {}
+    }
     
-    return nbytes;
+    Pipe_ClearIN();
+    Pipe_Freeze();
+
+    return totalbytes;
 }
 
 void garmin_sendpkt()
 {
+    Pipe_SelectPipe(GRMN_DATA_OUT_PIPE);
+    Pipe_Unfreeze();
+    
     const uint16_t nbytes = GARMIN_HEADER_SIZE + gblpkt->mDataSize;
-    const uint8_t status = host_send_data(pipes[GT_PIPE_OUT_BULK], nbytes, (U8*)gblpkt);
-    if(status != 0)
-    {
-        show_error("Error sending packet");
-    }
+    
+    Pipe_Write_Stream_LE(gblpkt, nbytes);
+    
+    Pipe_ClearOUT();
+    Pipe_Freeze();
 }
 
 void garmin_start_session()
@@ -280,127 +200,213 @@ bool garmin_check_protocol_support(const uint8_t tag, const uint16_t value)
     return FALSE;
 }
 
-void garmin_interrupt_recv(const U8 status, const U16 nbytes)
+
+/** Event handler for the USB_DeviceAttached event. This indicates that a device
+ *  has been attached to the host, and starts the library USB task to begin the
+ *  enumeration and USB management process.
+ */
+void EVENT_USB_DeviceAttached(void)
 {
-    printf("grmn_intr\n");
-    if(status == PIPE_GOOD)
-    {
-        if(nbytes == (GARMIN_HEADER_SIZE + sizeof(D800_Pvt_Data_Type)))
-        {
-            // Got a good packet
-            D800_Pvt_Data_Type* pvt = (D800_Pvt_Data_Type*)(&(gblpkt->mData));
-            char nmeabuf[512];
-            nmea_gprmc(pvt, nmeabuf);
-            printf("BUF: %s\n", nmeabuf);
-            
-            // Get the next one
-            init_packet(0, 0);
-            host_get_data_interrupt(pipes[cur_in_pipe],
-                GARMIN_HEADER_SIZE + sizeof(D800_Pvt_Data_Type),
-                pktbuf, garmin_interrupt_recv);
-        }
-        else
-        {
-            printf("rcv %d\n", nbytes);
-            while(1){}
-            show_error("Bad data size in int_recv\n");
-        }
-    }
-    else
-    {
-        show_error("status != PIPE_GOOD");
-    }
+    printf("Device Attached.");
+    /* Start USB management task to enumerate the device */
+    Scheduler_SetTaskMode(USB_USBTask, TASK_RUN);    
 }
 
-void garmin_transmogrifier_task_init(void)
+/** Event handler for the USB_DeviceUnattached event. This indicates that a
+ *  device has been removed from the host, and stops the library USB task
+ *  management process.
+ */
+void EVENT_USB_DeviceUnattached(void)
 {
+    /* Stop USB management and Still Image tasks */
+    Scheduler_SetTaskMode(USB_USBTask, TASK_STOP);
+    Scheduler_SetTaskMode(USB_Garmin_Host, TASK_STOP);
+
+    printf("Device Unattached.");
 }
 
-extern U8 device_state;
-void garmin_transmogrifier_task(void)
+/** Event handler for the USB_DeviceEnumerationComplete event. This indicates
+ *  that a device has been successfully enumerated by the host and is now ready
+ *  to be used by the application.
+ */
+void EVENT_USB_DeviceEnumerationComplete(void)
 {
-    // Is_host_ready will be true if the host is intialized AND a device has
-    // been attached and enumerated.
-    if(Is_host_ready())
-    {
-        // This will be true exactly once after the device has connected
-        if(Is_new_device_connection_event())
-        {
-            // setup the pipes array
-            initialize_pipes();
+    /* Once device is fully enumerated, start the Garmin Host task */
+    Scheduler_SetTaskMode(USB_Garmin_Host, TASK_RUN);
+}
 
+/** Event handler for the USB_HostError event. This indicates that a hardware
+ *  error occurred while in host mode.
+ */
+void EVENT_USB_HostError(const uint8_t ErrorCode)
+{
+    USB_ShutDown();
+
+#if (DEBUG == 1)
+    printf("Host Mode Error(%d)", ErrorCode);
+#endif // DEBUG
+    for(;;);   
+}
+
+
+/** Event handler for the USB_DeviceEnumerationFailed event. This indicates that
+ *  a problem occurred while enumerating an attached USB device.
+ */
+void EVENT_USB_DeviceEnumerationFailed(const uint8_t ErrorCode, const uint8_t SubErrorCode)
+{
+#if (DEBUG == 1)
+    printf("DevEnumFail(%d, %d, %d)", ErrorCode, SubErrorCode, USB_HostState); while(1) {}
+#endif // DEBUG
+}
+
+/** Task to set the configuration of the attached device after it has been
+ *  enumerated.
+ */
+void USB_Garmin_Host(void)
+{
+    uint8_t lastState = 0;
+    uint8_t ErrorCode = 0;
+    switch(USB_HostState)
+    {
+        case HOST_STATE_Addressed:
+        {
+            /* Standard request to set the device configuration to configuration 1 */
+            USB_ControlRequest = (USB_Request_Header_t)
+                    {
+                            .bmRequestType = (REQDIR_HOSTTODEVICE | REQTYPE_STANDARD | REQREC_DEVICE),
+                            .bRequest      = REQ_SetConfiguration,
+                            .wValue        = 1,
+                            .wIndex        = 0,
+                            .wLength       = 0,
+                    };
+
+            /* Select the control pipe for the request transfer */
+            Pipe_SelectPipe(PIPE_CONTROLPIPE);
+
+            /* Send the request, display error and wait for device detach if request fails */
+            if (USB_Host_SendControlRequest(NULL) != HOST_SENDCONTROL_Successful)
             {
-                uint32_t private_mode[4];
-                private_mode[0] = 0x01106E4B;
-                private_mode[1] = 2;
-                private_mode[2] = 4;
-                private_mode[3] = 0;
-                const uint8_t status = host_send_data(pipes[GT_PIPE_OUT_BULK], 16, (U8*)private_mode);
-                if(status != 0)
+#if (DEBUG == 1)
+                    printf("Control error.");
+#endif // DEBUG
+
+                    /* Wait until USB device disconnected */
+                    while (USB_IsConnected);
+                    break;
+            }
+                    
+            USB_HostState = HOST_STATE_Configured;
+            break;
+        }
+        case HOST_STATE_Configured:
+        {
+#if (DEBUG == 1)
+            printf("Getting Config Data.\r\n");
+#endif // DEBUG
+    
+            /* Get and process the configuration descriptor data */
+            if ((ErrorCode = ProcessConfigurationDescriptor()) != SuccessfulConfigRead)
+            {
+#if (DEBUG == 1)
+                printf("ConfigErr(%d)", ErrorCode);
+#endif // DEBUG
+                    /* Wait until USB device disconnected */
+                    while (USB_IsConnected);
+                    break;
+            }
+
+#if (DEBUG == 1)
+            printf("Garmin GPS Enumerated.\r\n");
+#endif // DEBUG
+
+            USB_HostState = HOST_STATE_Ready;
+            break;
+        }
+        case HOST_STATE_Ready:
+        {
+            if(lastState != HOST_STATE_Ready)
+            {
+                // First time we've been ready -- start application protocol
+                garmin_start_session();
+                bool supported = garmin_check_protocol_support(Tag_Appl_Prot_Id, 800);
+                supported &= garmin_check_protocol_support(Tag_Data_Type_Id, 800);
+                supported &= garmin_check_protocol_support(Tag_Link_Prot_Id, 1);
+                if(supported == FALSE)
                 {
-                    show_error("Can't send private data");
+                    show_error("L001/A800/D800 is not supported");
                 }
-            }
-
-            garmin_start_session();
-            bool supported = garmin_check_protocol_support(Tag_Appl_Prot_Id, 800);
-            supported &= garmin_check_protocol_support(Tag_Data_Type_Id, 800);
-            supported &= garmin_check_protocol_support(Tag_Link_Prot_Id, 1);
-            if(supported == FALSE)
-            {
-                show_error("L001/A800/D800 is not supported");
-            }
-            else
-            {
-                printf("Enable PVT\n");
-                // Initiate PVT transfers from the device
+                
                 init_packet(Prot_Application, Pid_Command_Data);
                 gblpkt->mDataSize = 2;
                 gblpkt->mData[0] = Cmnd_Start_Pvt_Data;
                 gblpkt->mData[1] = 0;
                 garmin_sendpkt();
             }
-        }
-
-        // Constantly check interrupt pipe
-        {
-            uint16_t bytes = _garmin_recvpkt(FALSE);
-            if(bytes > 0)
+            else
             {
-                switch(gblpkt->mPacketId)
+                // Check Interrupt Pipe and keep on keeping on.
+                
+                uint16_t bytes = _garmin_recvpkt(FALSE);
+                if(bytes > 0)
                 {
-                    case Pid_Pvt_Data:
+                    switch(gblpkt->mPacketId)
                     {
-                        // Got a good packet
-                        D800_Pvt_Data_Type* pvt = (D800_Pvt_Data_Type*)(&(gblpkt->mData));
-                        char nmeabuf[512];
-                        nmea_gprmc(pvt, nmeabuf);
-                        printf("BUF: %s\n", nmeabuf);
-                        break;
-                    }
-                    case Pid_Data_Available:
-                    {
-                        cur_in_pipe = GT_PIPE_IN_BULK;
-                        break;
-                    }
-                    default:
-                    {
-#if (DEBUG==1)
-                        printf("recvPkt(%d)\n", gblpkt->mPacketId);
+                        case Pid_Pvt_Data:
+                        {
+                            D800_Pvt_Data_Type* pvt = (D800_Pvt_Data_Type*)(&(gblpkt->mData));
+                            char nmeabuf[512];
+                            nmea_gprmc(pvt, nmeabuf);
+                            printf("BUF: %s", nmeabuf);
+                            break;
+                        }
+                        case Pid_Data_Available:
+                        {
+                            cur_in_pipe = GRMN_DATA_IN_PIPE;
+                            break;
+                        }
+                        default:
+                        {
+#if (DEBUG == 1)
+                            printf("recvPkt(%d)", gblpkt->mPacketId);
 #endif // DEBUG
+                        }
                     }
                 }
             }
         }
     }
     
-    if(Is_device_disconnection_event())
-    {
-        // FIXME: What action do we take? Any?
-    }
+    lastState = USB_HostState;
 }
 
-void garmin_host_usb_error()
+int main(void)
 {
-    show_error("GRMN-USB-ERR\n");
+    const uint16_t reset_status = MCUSR;
+
+    uart_init(umAsync, 9600, csSize8, pNoParity, sbOneStopBit);
+    if(Is_POR_Reset() || Is_EXT_Reset())
+    {
+        lcd_clear();
+    }
+#if (DEBUG == 1)
+    printf("MCU2:%d\n", reset_status);
+#endif // DEBUG
+
+    MCUSR = 0;
+    wdt_disable();
+    
+    // Disable clock division
+    {
+        CLKPR = _BV(CLKPCE);
+        CLKPR = 0;        
+    }
+    
+    Scheduler_Init();
+    
+    USB_Init();
+    
+    Scheduler_Start();
+    
+    return 0; // never reached
 }
+
