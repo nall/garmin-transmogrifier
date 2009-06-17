@@ -53,7 +53,9 @@ static Packet_t* gblpkt = (Packet_t*)pktbuf;
 static const bool FALSE = 0;
 static const bool TRUE = 1;
 
-static uint16_t _garmin_recvpkt(const bool require_data);
+static bool garmin_recvpkt(const bool block);
+static bool garmin_recvpkt_block() { return garmin_recvpkt(TRUE); }
+static bool garmin_recvpkt_nonblock() { return garmin_recvpkt(FALSE); }
 
 TASK_LIST
 {
@@ -75,12 +77,7 @@ static void init_packet(const uint8_t type, const uint8_t id)
     gblpkt->mPacketId = id; 
 }
 
-static uint16_t garmin_recvpkt()
-{
-    return _garmin_recvpkt(TRUE);
-}
-
-static uint16_t _garmin_recvpkt(const bool require_data)
+static bool garmin_recvpkt(const bool block)
 {
     // Zero-out the packet structure
     init_packet(0, 0);
@@ -88,36 +85,34 @@ static uint16_t _garmin_recvpkt(const bool require_data)
     Pipe_SelectPipe(cur_in_pipe);
     Pipe_Unfreeze();
 
-    uint16_t totalbytes = 0;
-
-    if(Pipe_BytesInPipe() == 0 && require_data == FALSE)
+    bool foundPkt = FALSE;
+    
+    if(Pipe_BytesInPipe() > 0 || block == TRUE)
     {
-        return totalbytes;
-    }
-
-    enum Pipe_Stream_RW_ErrorCodes_t rc = Pipe_Read_Stream_LE(gblpkt, GARMIN_HEADER_SIZE);
-    if(rc == PIPE_RWSTREAM_NoError)
-    {
-        totalbytes += GARMIN_HEADER_SIZE;
-        rc = Pipe_Read_Stream_LE(gblpkt->mData, gblpkt->mDataSize);
-        if(rc != PIPE_RWSTREAM_NoError)
+        enum Pipe_Stream_RW_ErrorCodes_t rc = Pipe_Read_Stream_LE(gblpkt, GARMIN_HEADER_SIZE);
+        if(rc == PIPE_RWSTREAM_NoError)
         {
-            printf("StreamRWErr1(%d)", rc); while(1) {}
+            rc = Pipe_Read_Stream_LE(gblpkt->mData, gblpkt->mDataSize);
+            if(rc != PIPE_RWSTREAM_NoError)
+            {
+                printf("StreamRWErr1(%d)", rc); while(1) {}
+            }
+            else
+            {
+                foundPkt = TRUE;
+            }
         }
         else
         {
-            totalbytes += gblpkt->mDataSize;
+            printf("StreamRWErr0(%d)", rc); while(1) {}
         }
+
+        Pipe_ClearIN();        
     }
-    else
-    {
-        printf("StreamRWErr0(%d)", rc); while(1) {}
-    }
-    
-    Pipe_ClearIN();
+
     Pipe_Freeze();
 
-    return totalbytes;
+    return foundPkt;
 }
 
 void garmin_sendpkt()
@@ -145,7 +140,7 @@ void garmin_start_session()
     do
     {
         // Ignore all packets until we get this, per the Garmin Spec 3.2.3.3
-        garmin_recvpkt();        
+        garmin_recvpkt_block();        
     } while(gblpkt->mPacketId != Pid_Session_Started);
     
 #if (DEBUG==1)
@@ -162,7 +157,7 @@ bool garmin_check_protocol_support(const uint8_t tag, const uint16_t value)
     
     // Product_Data_Type
     {
-        garmin_recvpkt();
+        garmin_recvpkt_block();
         #if (DEBUG==1)
         if(gblpkt->mPacketId != Pid_Product_Data)
         {
@@ -175,7 +170,7 @@ bool garmin_check_protocol_support(const uint8_t tag, const uint16_t value)
     {
         do
         {
-            garmin_recvpkt();
+            garmin_recvpkt_block();
         } while(gblpkt->mPacketId == Pid_Ext_Product_Data);        
     }
 
@@ -330,6 +325,24 @@ void USB_Garmin_Host(void)
         {
             if(lastState != HOST_STATE_Ready)
             {
+                if(0)
+                {
+                     uint32_t private_mode[4];
+                     private_mode[0] = 0x01106E4B;
+                     private_mode[1] = 2;
+                     private_mode[2] = 4;
+                     private_mode[3] = 0;
+                     Pipe_SelectPipe(GRMN_DATA_OUT_PIPE);
+                     Pipe_Unfreeze();
+                     const uint8_t status = Pipe_Write_Stream_LE(private_mode, 16);
+                     Pipe_ClearOUT();
+                     Pipe_Freeze();
+                     if(status != 0)
+                     {
+                         show_error("Can't send private data");
+                     }
+                }
+                 
                 // First time we've been ready -- start application protocol
                 garmin_start_session();
                 bool supported = garmin_check_protocol_support(Tag_Appl_Prot_Id, 800);
@@ -350,7 +363,7 @@ void USB_Garmin_Host(void)
             {
                 // Check Interrupt Pipe and keep on keeping on.
                 
-                uint16_t bytes = _garmin_recvpkt(FALSE);
+                uint16_t bytes = garmin_recvpkt_nonblock(FALSE);
                 if(bytes > 0)
                 {
                     switch(gblpkt->mPacketId)
