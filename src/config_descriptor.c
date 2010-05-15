@@ -53,7 +53,7 @@ uint8_t ProcessConfigurationDescriptor(void)
 			{
 				/* Configure the events pipe */
 				Pipe_ConfigurePipe(GRMN_EVENTS_PIPE, EP_TYPE_INTERRUPT, PIPE_TOKEN_IN,
-								   EndpointData->EndpointAddress, EndpointData->EndpointSize,
+								   (EndpointData->EndpointAddress & PIPE_EPNUM_MASK), EndpointData->EndpointSize,
 								   PIPE_BANK_DOUBLE);			
 
 				Pipe_SetInfiniteINRequests();
@@ -70,7 +70,7 @@ uint8_t ProcessConfigurationDescriptor(void)
 			{
 				/* Configure the data IN pipe */
 				Pipe_ConfigurePipe(GRMN_DATA_IN_PIPE, EP_TYPE_BULK, PIPE_TOKEN_IN,
-								   EndpointData->EndpointAddress, EndpointData->EndpointSize,
+								   (EndpointData->EndpointAddress & PIPE_EPNUM_MASK), EndpointData->EndpointSize,
 								   PIPE_BANK_DOUBLE);
 
 				Pipe_SetInfiniteINRequests();
@@ -82,7 +82,7 @@ uint8_t ProcessConfigurationDescriptor(void)
 			{
 				/* Configure the data OUT pipe */
 				Pipe_ConfigurePipe(GRMN_DATA_OUT_PIPE, EP_TYPE_BULK, PIPE_TOKEN_OUT,
-								   EndpointData->EndpointAddress, EndpointData->EndpointSize,
+								   (EndpointData->EndpointAddress & PIPE_EPNUM_MASK), EndpointData->EndpointSize,
 								   PIPE_BANK_DOUBLE);
 
 				/* Set the flag indicating that the data OUT pipe has been found */

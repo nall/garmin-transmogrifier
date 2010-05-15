@@ -131,12 +131,13 @@ uint8_t Pipe_Write_Stream_LE(const void* Data, uint16_t Length
 
 			if ((ErrorCode = Pipe_WaitUntilReady()))
 			  return ErrorCode;
+              
 		}
 		else
 		{
 			Pipe_Write_Byte(*(DataStream++));
 			Length--;
-		}
+		}		
 	}
 
 	return PIPE_RWSTREAM_NoError;
@@ -213,6 +214,7 @@ uint8_t Pipe_Discard_Stream(uint16_t Length
 	return PIPE_RWSTREAM_NoError;
 }
 
+#if 0
 uint8_t Pipe_Read_Stream_LE(void* Buffer, uint16_t Length
 #if !defined(NO_STREAM_CALLBACKS)
                                  , StreamCallbackPtr_t Callback
@@ -229,6 +231,8 @@ uint8_t Pipe_Read_Stream_LE(void* Buffer, uint16_t Length
 	{
 		if (!(Pipe_IsReadWriteAllowed()))
 		{
+		    printf("CLEAR %d\n", Length);
+            
 			Pipe_ClearIN();
 				
 			#if !defined(NO_STREAM_CALLBACKS)
@@ -236,18 +240,84 @@ uint8_t Pipe_Read_Stream_LE(void* Buffer, uint16_t Length
 			  return PIPE_RWSTREAM_CallbackAborted;
 			#endif
 
+			Pipe_Unfreeze();
+
 			if ((ErrorCode = Pipe_WaitUntilReady()))
 			  return ErrorCode;
+		
+			Pipe_Freeze();
+		}
+
+		while (Pipe_Bytes_Available() && Length)
+		{
+            uint8_t b = Pipe_Read_Byte();
+		    printf("PIPE: %d %d (%c / 0x%x)\n", Length, Pipe_Bytes_Available(), b, b);
+  		  *(DataStream++) = b;
+          --Length;
+		    
+		}
+        printf("L: %d\n", Length);
+	}
+
+	return PIPE_RWSTREAM_NoError;
+}
+#endif 
+#if 1
+uint8_t Pipe_Read_Stream_LE(void* Buffer, uint16_t Length
+#if !defined(NO_STREAM_CALLBACKS)
+                                 , StreamCallbackPtr_t Callback
+#endif
+								 )
+{
+	uint8_t* DataStream = (uint8_t*)Buffer;
+	uint8_t  ErrorCode;
+	
+	Pipe_Unfreeze();
+	
+	if ((ErrorCode = Pipe_WaitUntilReady()))
+	  return ErrorCode;
+
+  Pipe_Freeze();
+
+	while (Length)
+	{
+        printf("BB: %d ", UPSTAX & 3);
+		if (!(Pipe_IsReadWriteAllowed()))
+		{
+            printf("CLEAR %d\n", Length);
+			Pipe_ClearIN();
+            printf(">>BB: %d", UPSTAX & 3);
+				
+			#if !defined(NO_STREAM_CALLBACKS)
+			if ((Callback != NULL) && (Callback() == STREAMCALLBACK_Abort))
+			  return PIPE_RWSTREAM_CallbackAborted;
+			#endif
+
+      	Pipe_Unfreeze();
+
+			if ((ErrorCode = Pipe_WaitUntilReady()))
+			  return ErrorCode;
+          Pipe_Freeze();
 		}
 		else
 		{
-			*(DataStream++) = Pipe_Read_Byte();
+            uint8_t b = Pipe_Read_Byte();
+            uint8_t clear = (Pipe_BytesInPipe() & (Pipe_SizeOfPipe() - 1)) == 0;
+		    printf("PIPE: %d %d (%c)\n", Pipe_BytesInPipe() & (Pipe_SizeOfPipe() - 1), clear, b);
+            *(DataStream++) = b;
 			Length--;
+			
+			if(clear && Pipe_IsReadWriteAllowed())
+			{
+                printf("myclear\n");
+                Pipe_ClearIN();
+			}
 		}
 	}
 
 	return PIPE_RWSTREAM_NoError;
 }
+#endif
 
 uint8_t Pipe_Read_Stream_BE(void* Buffer, uint16_t Length
 #if !defined(NO_STREAM_CALLBACKS)

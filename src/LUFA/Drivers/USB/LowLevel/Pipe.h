@@ -386,6 +386,11 @@
 				 */
 				static inline void Pipe_ClearStall(void);
 			#else
+			    #define Pipe_SizeOfPipe()              (8 << (UPCFG1X >> 4))
+			
+			#define Pipe_Bytes_Available() (Pipe_BytesInPipe() & (Pipe_SizeOfPipe() - 1))
+
+            
 				#define Pipe_BytesInPipe()             UPBCX
 
 				#define Pipe_GetCurrentPipe()          (UPNUM & PIPE_PIPENUM_MASK)
@@ -436,8 +441,10 @@
 
 				#define Pipe_IsSETUPSent()             ((UPINTX & (1 << TXSTPI)) ? true : false)
 
-				#define Pipe_ClearIN()                 MACROS{ uint8_t Temp = UPINTX; UPINTX = (Temp & ~(1 << RXINI)); \
-				                                               UPINTX = (Temp & ~(1 << FIFOCON)); }MACROE
+//				#define Pipe_ClearIN()                 MACROS{ uint8_t Temp = UPINTX; UPINTX = (Temp & ~(1 << RXINI));
+//				                                               UPINTX = (Temp & ~(1 << FIFOCON)); }MACROE
+
+                #define Pipe_ClearIN()  MACROS{ UPINTX &= ~(1 << RXINI); UPINTX &= ~(1 << FIFOCON); }MACROE
 
 				#define Pipe_ClearOUT()                MACROS{ uint8_t Temp = UPINTX; UPINTX = (Temp & ~(1 << TXOUTI)); \
 				                                               UPINTX = (Temp & ~(1 << FIFOCON)); }MACROE

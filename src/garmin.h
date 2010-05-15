@@ -69,6 +69,12 @@ typedef struct {
 } Protocol_Data_Type;
 
 typedef struct {
+    uint16_t product_ID;
+    int16_t software_version;
+    char product_description[];
+} Product_Data_Type;
+
+typedef struct {
     float   alt;
     float   epe;
     float   eph;

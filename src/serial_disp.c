@@ -62,7 +62,8 @@ static int uart_putc(char c, FILE* stream)
     }
     else if(c == '\n')
     {
-        c = '.';
+        _send_char('\r');
+//        c = '.';
     }
     
     _send_char(c);

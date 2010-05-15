@@ -53,6 +53,9 @@ static Packet_t* gblpkt = (Packet_t*)pktbuf;
 static const bool FALSE = 0;
 static const bool TRUE = 1;
 
+static bool initialized0 = 0;
+
+
 static bool garmin_recvpkt(const bool block);
 static bool garmin_recvpkt_block() { return garmin_recvpkt(TRUE); }
 static bool garmin_recvpkt_nonblock() { return garmin_recvpkt(FALSE); }
@@ -83,31 +86,50 @@ static bool garmin_recvpkt(const bool block)
     init_packet(0, 0);
     
     Pipe_SelectPipe(cur_in_pipe);
-    Pipe_Unfreeze();
+   // Pipe_Unfreeze();
 
     bool foundPkt = FALSE;
-    
+
     if(Pipe_BytesInPipe() > 0 || block == TRUE)
     {
         enum Pipe_Stream_RW_ErrorCodes_t rc = Pipe_Read_Stream_LE(gblpkt, GARMIN_HEADER_SIZE);
+        if(Pipe_Bytes_Available() == 0)
+        {
+            Pipe_ClearIN();
+        }
+        for(int i = 0; i < GARMIN_HEADER_SIZE; ++i)
+        {
+            printf("%c",  pktbuf[i]);
+            
+        }
+        printf("\n\n");
         if(rc == PIPE_RWSTREAM_NoError)
         {
+            printf("R(%x,%ld)", gblpkt->mPacketId, gblpkt->mDataSize);
             rc = Pipe_Read_Stream_LE(gblpkt->mData, gblpkt->mDataSize);
             if(rc != PIPE_RWSTREAM_NoError)
             {
-                printf("StreamRWErr1(%d)", rc); while(1) {}
+                printf("StreamRWErr1(%d)\n", rc); while(1) {}
             }
             else
             {
+                for(int i = 0; i < gblpkt->mDataSize;++i)
+                {
+                    printf("%c",  pktbuf[i]);
+                }
+                printf("\n");
+                if(Pipe_Bytes_Available() == 0)
+                {
+                    Pipe_ClearIN();
+                }
+                
                 foundPkt = TRUE;
             }
         }
         else
         {
-            printf("StreamRWErr0(%d)", rc); while(1) {}
+            printf("StreamRWErr0(%d, %d)\n", rc, UPERRX); while(1) {}
         }
-
-        Pipe_ClearIN();        
     }
 
     Pipe_Freeze();
@@ -117,18 +139,18 @@ static bool garmin_recvpkt(const bool block)
 
 void garmin_sendpkt()
 {
+    printf("S(%x)\n", gblpkt->mPacketId);
     Pipe_SelectPipe(GRMN_DATA_OUT_PIPE);
     Pipe_Unfreeze();
     
     const uint16_t nbytes = GARMIN_HEADER_SIZE + gblpkt->mDataSize;
-    
     enum Pipe_Stream_RW_ErrorCodes_t rc = Pipe_Write_Stream_LE(gblpkt, nbytes);
     if(rc != PIPE_RWSTREAM_NoError)
     {
-        printf("StreamRWErr2(%d)", rc); while(1) {}
+        printf("StreamRWErr2(%d)\n", rc); while(1) {}
     }
     
-    Pipe_ClearOUT();
+    Pipe_ClearOUT();    
     Pipe_Freeze();
 }
 
@@ -142,39 +164,38 @@ void garmin_start_session()
         // Ignore all packets until we get this, per the Garmin Spec 3.2.3.3
         garmin_recvpkt_block();        
     } while(gblpkt->mPacketId != Pid_Session_Started);
-    
 #if (DEBUG==1)
     // Protocol is little endian and gcc-avr is too, so we can just cast this.
-    uint32_t unitID = *((uint32_t*)(&(gblpkt->mData)));
-    printf("UnitID: 0x%lx", unitID);
+    //    uint32_t unitID = *((uint32_t*)(&(gblpkt->mData)));
+    //    printf("UnitID: 0x%lx", unitID);
 #endif // DEBUG
 }
 
 bool garmin_check_protocol_support(const uint8_t tag, const uint16_t value)
 {
+    printf("CHECK %c%d\n", tag, value);
     init_packet(Prot_Application, Pid_Product_Rqst);
     garmin_sendpkt();
     
-    // Product_Data_Type
+    // We always receive a Product_Data_Type
     {
         garmin_recvpkt_block();
-        #if (DEBUG==1)
         if(gblpkt->mPacketId != Pid_Product_Data)
         {
-            show_error("Non-Product Data Type");
+            show_error("Non-Product Data Type\n");
         }
-        #endif // DEBUG        
     }
 
-    // Check for zero or more Ext Product packets
+    // Product_Data_Type is followed by zero or more Pid_Ext_Product_Datas
     {
         do
         {
-            garmin_recvpkt_block();
+            garmin_recvpkt_nonblock();
         } while(gblpkt->mPacketId == Pid_Ext_Product_Data);        
     }
 
-    // Get Protocol Array
+    // After any Pid_Ext_Product_Datas packets, an optional Pid_Protocol_Array
+    // can be sent
     if(gblpkt->mPacketId == Pid_Protocol_Array)
     {
         const uint16_t num_types = gblpkt->mDataSize / sizeof(Protocol_Data_Type);
@@ -193,7 +214,7 @@ bool garmin_check_protocol_support(const uint8_t tag, const uint16_t value)
     }    
     else
     {
-        show_error("Unexpected A000-A001 state");
+        printf("Unexpected A000-A001 state (%d)\n", gblpkt->mPacketId); while(1) {}
     }
     
     return FALSE;
@@ -206,7 +227,7 @@ bool garmin_check_protocol_support(const uint8_t tag, const uint16_t value)
  */
 void EVENT_USB_DeviceAttached(void)
 {
-    printf("Device Attached.");
+    printf("Device Attached\n");
     /* Start USB management task to enumerate the device */
     Scheduler_SetTaskMode(USB_USBTask, TASK_RUN);    
 }
@@ -221,7 +242,7 @@ void EVENT_USB_DeviceUnattached(void)
     Scheduler_SetTaskMode(USB_USBTask, TASK_STOP);
     Scheduler_SetTaskMode(USB_Garmin_Host, TASK_STOP);
 
-    printf("Device Unattached.");
+    printf("Device Unattached\n");
 }
 
 /** Event handler for the USB_DeviceEnumerationComplete event. This indicates
@@ -242,7 +263,7 @@ void EVENT_USB_HostError(const uint8_t ErrorCode)
     USB_ShutDown();
 
 #if (DEBUG == 1)
-    printf("Host Mode Error(%d)", ErrorCode);
+    printf("Host Mode Error(%d)\n", ErrorCode);
 #endif // DEBUG
     for(;;);   
 }
@@ -254,13 +275,14 @@ void EVENT_USB_HostError(const uint8_t ErrorCode)
 void EVENT_USB_DeviceEnumerationFailed(const uint8_t ErrorCode, const uint8_t SubErrorCode)
 {
 #if (DEBUG == 1)
-    printf("DevEnumFail(%d, %d, %d)", ErrorCode, SubErrorCode, USB_HostState); while(1) {}
+    printf("DevEnumFail(%d, %d, %d)\n", ErrorCode, SubErrorCode, USB_HostState); while(1) {}
 #endif // DEBUG
 }
 
 /** Task to set the configuration of the attached device after it has been
  *  enumerated.
  */
+ 
 void USB_Garmin_Host(void)
 {
     uint8_t lastState = 0;
@@ -269,6 +291,27 @@ void USB_Garmin_Host(void)
     {
         case HOST_STATE_Addressed:
         {
+                     
+            USB_HostState = HOST_STATE_Configured;
+            break;
+        }
+        case HOST_STATE_Configured:
+        {
+#if (DEBUG == 1)
+            printf("Getting Config Data\n");
+#endif // DEBUG
+    
+            /* Get and process the configuration descriptor data */
+            if ((ErrorCode = ProcessConfigurationDescriptor()) != SuccessfulConfigRead)
+            {
+#if (DEBUG == 1)
+                printf("ConfigErr(%d)\n", ErrorCode);
+#endif // DEBUG
+                    /* Wait until USB device disconnected */
+                    while (USB_IsConnected);
+                    break;
+            }
+
             /* Standard request to set the device configuration to configuration 1 */
             USB_ControlRequest = (USB_Request_Header_t)
                     {
@@ -286,36 +329,16 @@ void USB_Garmin_Host(void)
             if (USB_Host_SendControlRequest(NULL) != HOST_SENDCONTROL_Successful)
             {
 #if (DEBUG == 1)
-                    printf("Control error.");
+                    printf("Control error\n");
 #endif // DEBUG
 
                     /* Wait until USB device disconnected */
                     while (USB_IsConnected);
                     break;
             }
-                    
-            USB_HostState = HOST_STATE_Configured;
-            break;
-        }
-        case HOST_STATE_Configured:
-        {
-#if (DEBUG == 1)
-            printf("Getting Config Data.");
-#endif // DEBUG
-    
-            /* Get and process the configuration descriptor data */
-            if ((ErrorCode = ProcessConfigurationDescriptor()) != SuccessfulConfigRead)
-            {
-#if (DEBUG == 1)
-                printf("ConfigErr(%d)", ErrorCode);
-#endif // DEBUG
-                    /* Wait until USB device disconnected */
-                    while (USB_IsConnected);
-                    break;
-            }
 
 #if (DEBUG == 1)
-            printf("Garmin GPS Enumerated.");
+            printf("Garmin GPS Enumerated\n");
 #endif // DEBUG
 
             USB_HostState = HOST_STATE_Ready;
@@ -323,8 +346,9 @@ void USB_Garmin_Host(void)
         }
         case HOST_STATE_Ready:
         {
-            if(lastState != HOST_STATE_Ready)
+            if(!initialized0 && lastState != HOST_STATE_Ready)
             {
+                initialized0 = 1;
                 if(0)
                 {
                      uint32_t private_mode[4];
@@ -339,20 +363,22 @@ void USB_Garmin_Host(void)
                      Pipe_Freeze();
                      if(status != 0)
                      {
-                         show_error("Can't send private data");
+                         show_error("Can't send private data\n");
                      }
                 }
                  
                 // First time we've been ready -- start application protocol
+                printf("StartSesson\n");
                 garmin_start_session();
                 bool supported = garmin_check_protocol_support(Tag_Appl_Prot_Id, 800);
                 supported &= garmin_check_protocol_support(Tag_Data_Type_Id, 800);
                 supported &= garmin_check_protocol_support(Tag_Link_Prot_Id, 1);
                 if(supported == FALSE)
                 {
-                    show_error("L001/A800/D800 is not supported");
+                    show_error("L001/A800/D800 is not supported\n");
                 }
                 
+                printf("Enable PVT\n");
                 init_packet(Prot_Application, Pid_Command_Data);
                 gblpkt->mDataSize = 2;
                 gblpkt->mData[0] = Cmnd_Start_Pvt_Data;
@@ -363,7 +389,7 @@ void USB_Garmin_Host(void)
             {
                 // Check Interrupt Pipe and keep on keeping on.
                 
-                uint16_t bytes = garmin_recvpkt_nonblock(FALSE);
+                uint16_t bytes = garmin_recvpkt_nonblock();
                 if(bytes > 0)
                 {
                     switch(gblpkt->mPacketId)
@@ -373,7 +399,7 @@ void USB_Garmin_Host(void)
                             D800_Pvt_Data_Type* pvt = (D800_Pvt_Data_Type*)(&(gblpkt->mData));
                             char nmeabuf[512];
                             nmea_gprmc(pvt, nmeabuf);
-                            printf("BUF: %s", nmeabuf);
+                            printf("BUF: %s\n", nmeabuf);
                             break;
                         }
                         case Pid_Data_Available:
@@ -384,7 +410,7 @@ void USB_Garmin_Host(void)
                         default:
                         {
 #if (DEBUG == 1)
-                            printf("recvPkt(%d)", gblpkt->mPacketId);
+                            printf("recvPkt(%d)\n", gblpkt->mPacketId);
 #endif // DEBUG
                         }
                     }
@@ -409,7 +435,7 @@ int main(void)
         lcd_clear();
     }
 #if (DEBUG == 1)
-    printf("MCU2:%d", reset_status);
+    printf("\nMCU2:%d\n", reset_status);
 #endif // DEBUG
 
     MCUSR = 0;

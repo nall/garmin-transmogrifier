@@ -106,6 +106,7 @@ LUFA_PATH = $(SRCDIR)/LUFA
 SRC = $(SRCDIR)/$(TARGET).c                                  \
 	  $(SRCDIR)/config_descriptor.c                          \
 	  $(SRCDIR)/serial_disp.c                                \
+	  $(SRCDIR)/nmeagen.c                                    \
 	  $(LUFA_PATH)/Scheduler/Scheduler.c                     \
 	  $(LUFA_PATH)/Drivers/Peripheral/SerialStream.c         \
 	  $(LUFA_PATH)/Drivers/Peripheral/Serial.c               \

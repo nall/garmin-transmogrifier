@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>src/atmel-usb-lib/modules/usb/host_chap9/usb_host_task.c</string>
+	<string>src/config_descriptor.h</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -18,80 +18,94 @@
 		</dict>
 	</array>
 	<key>fileHierarchyDrawerWidth</key>
-	<integer>200</integer>
+	<integer>268</integer>
 	<key>metaData</key>
 	<dict>
-		<key>src/atmel-usb-lib/conf/conf_usb.h</key>
+		<key>src/LUFA/Drivers/USB/LowLevel/Device.h</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>37</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>200</integer>
+				<integer>0</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>152</integer>
+			<integer>105</integer>
 		</dict>
-		<key>src/atmel-usb-lib/modules/usb/host_chap9/usb_host_task.c</key>
+		<key>src/LUFA/Drivers/USB/LowLevel/Host.h</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>9</integer>
+				<integer>48</integer>
 				<key>line</key>
-				<integer>206</integer>
+				<integer>240</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>233</integer>
+		</dict>
+		<key>src/LUFA/Drivers/USB/LowLevel/HostChapter9.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>26</integer>
+		</dict>
+		<key>src/LUFA/Drivers/USB/LowLevel/LowLevel.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>14</integer>
+				<key>line</key>
+				<integer>155</integer>
 			</dict>
 			<key>columnSelection</key>
 			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>188</integer>
+			<integer>130</integer>
 			<key>selectFrom</key>
 			<dict>
 				<key>column</key>
-				<integer>3</integer>
+				<integer>1</integer>
 				<key>line</key>
-				<integer>206</integer>
+				<integer>155</integer>
 			</dict>
 			<key>selectTo</key>
 			<dict>
 				<key>column</key>
-				<integer>16</integer>
+				<integer>14</integer>
 				<key>line</key>
-				<integer>206</integer>
+				<integer>155</integer>
 			</dict>
 		</dict>
-		<key>src/atmel-usb-lib/modules/usb/usb_task.c</key>
+		<key>src/LUFA/Drivers/USB/LowLevel/Pipe.h</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>18</integer>
+				<integer>12</integer>
 				<key>line</key>
-				<integer>176</integer>
+				<integer>392</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>198</integer>
-		</dict>
-		<key>src/atmel-usb-lib/modules/usb/usb_task.h</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>0</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
+			<integer>380</integer>
 		</dict>
 		<key>src/common.h</key>
 		<dict>
@@ -107,133 +121,116 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
+		<key>src/config_descriptor.c</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>27</integer>
+				<key>line</key>
+				<integer>73</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>48</integer>
+		</dict>
+		<key>src/config_descriptor.h</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
 		<key>src/garmin.h</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>10</integer>
+				<integer>8</integer>
 				<key>line</key>
-				<integer>85</integer>
+				<integer>73</integer>
 			</dict>
-			<key>columnSelection</key>
-			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>56</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>2</integer>
-				<key>line</key>
-				<integer>85</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>20</integer>
-				<key>line</key>
-				<integer>85</integer>
-			</dict>
+			<integer>69</integer>
 		</dict>
 		<key>src/garmin_transmogrifier.c</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
+				<integer>11</integer>
 				<key>line</key>
-				<integer>409</integer>
+				<integer>55</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>359</integer>
-		</dict>
-		<key>src/garminusb2nmea.c</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>41</integer>
-				<key>line</key>
-				<integer>104</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>121</integer>
-		</dict>
-		<key>src/main.c</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>21</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
-		</dict>
-		<key>src/nmeagen.c</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>59</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>105</integer>
+			<integer>47</integer>
 		</dict>
 		<key>src/nmeagen.h</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>22</integer>
+				<integer>11</integer>
 				<key>line</key>
-				<integer>54</integer>
+				<integer>55</integer>
 			</dict>
+			<key>columnSelection</key>
+			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>10</integer>
+			<integer>0</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>4</integer>
+				<key>line</key>
+				<integer>55</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>14</integer>
+				<key>line</key>
+				<integer>55</integer>
+			</dict>
 		</dict>
-		<key>src/serial_disp.h</key>
+		<key>src/serial_disp.c</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
+				<integer>25</integer>
 				<key>line</key>
-				<integer>42</integer>
+				<integer>64</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>0</integer>
+			<integer>30</integer>
 		</dict>
 	</dict>
 	<key>openDocuments</key>
 	<array>
 		<string>src/garmin_transmogrifier.c</string>
-		<string>src/serial_disp.h</string>
-		<string>src/garminusb2nmea.c</string>
-		<string>src/nmeagen.c</string>
-		<string>src/atmel-usb-lib/modules/usb/usb_task.c</string>
-		<string>src/atmel-usb-lib/modules/usb/host_chap9/usb_host_task.c</string>
-		<string>src/atmel-usb-lib/conf/conf_usb.h</string>
-		<string>src/atmel-usb-lib/modules/usb/usb_task.h</string>
-		<string>src/main.c</string>
+		<string>src/serial_disp.c</string>
 		<string>src/nmeagen.h</string>
+		<string>src/config_descriptor.h</string>
+		<string>src/config_descriptor.c</string>
+		<string>src/LUFA/Drivers/USB/LowLevel/Device.h</string>
+		<string>src/LUFA/Drivers/USB/LowLevel/Pipe.h</string>
 		<string>src/garmin.h</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
@@ -248,32 +245,25 @@
 			<true/>
 			<key>subItems</key>
 			<dict>
-				<key>atmel-usb-lib</key>
+				<key>LUFA</key>
 				<dict>
 					<key>isExpanded</key>
 					<true/>
 					<key>subItems</key>
 					<dict>
-						<key>conf</key>
-						<dict>
-							<key>isExpanded</key>
-							<true/>
-							<key>subItems</key>
-							<dict/>
-						</dict>
-						<key>modules</key>
+						<key>Drivers</key>
 						<dict>
 							<key>isExpanded</key>
 							<true/>
 							<key>subItems</key>
 							<dict>
-								<key>usb</key>
+								<key>USB</key>
 								<dict>
 									<key>isExpanded</key>
 									<true/>
 									<key>subItems</key>
 									<dict>
-										<key>host_chap9</key>
+										<key>LowLevel</key>
 										<dict>
 											<key>isExpanded</key>
 											<true/>
@@ -290,6 +280,6 @@
 		</dict>
 	</dict>
 	<key>windowFrame</key>
-	<string>{{213, 31}, {1227, 847}}</string>
+	<string>{{-1547, 31}, {1309, 847}}</string>
 </dict>
 </plist>
